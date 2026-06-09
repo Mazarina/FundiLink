@@ -44,6 +44,12 @@ public static class DependencyInjection
         services.AddScoped<IProgrammeRepository, ProgrammeRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IEmailService, StubEmailService>();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
+        services.AddScoped<IChecklistRepository, ChecklistRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<ILearnerQueryRepository, LearnerQueryRepository>();
+        services.AddScoped<IInstitutionRepository, InstitutionRepository>();
+        services.AddScoped<IDocumentStorageService, LocalDiskDocumentStorageService>();
 
         return services;
     }

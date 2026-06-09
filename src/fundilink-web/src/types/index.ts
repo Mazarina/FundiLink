@@ -10,6 +10,54 @@ export interface AuthTokens {
 export interface AuthUser {
   userId: string
   email: string
+  role?: string
+}
+
+export type DocumentType = 'IdDocument' | 'MatricCertificate' | 'AcademicResults' | 'ProofOfResidence' | 'GuardianConsent' | 'Other'
+export type DocumentStatus = 'Pending' | 'Verified' | 'Rejected'
+
+export interface LearnerDocument {
+  id: string
+  documentType: DocumentType
+  fileName: string
+  sizeBytes: number
+  status: DocumentStatus
+  uploadedAt: string
+  rejectionReason?: string
+}
+
+export interface ChecklistItem {
+  id: string
+  documentType: DocumentType
+  isRequired: boolean
+  linkedDocumentId?: string
+  linkedDocumentStatus?: DocumentStatus
+}
+
+export interface AuditLogEntry {
+  id: string
+  actorUserId: string
+  actorRole: string
+  action: string
+  targetType: string
+  targetId: string
+  occurredAt: string
+}
+
+export interface LearnerSummary {
+  id: string
+  fullName: string
+  email: string
+  province: string
+  gradeLevel: string
+  profileCompleteness: number
+}
+
+export interface LearnerOverview {
+  summary: LearnerSummary
+  apsScore: number
+  applicationCount: number
+  documentCount: number
 }
 
 export interface LearnerProfile {

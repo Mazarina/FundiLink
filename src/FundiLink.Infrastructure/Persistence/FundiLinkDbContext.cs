@@ -17,6 +17,9 @@ public class FundiLinkDbContext : IdentityDbContext, IApplicationDbContext
     public DbSet<Institution> Institutions => Set<Institution>();
     public DbSet<Programme> Programmes => Set<Programme>();
     public DbSet<LearnerApplication> LearnerApplications => Set<LearnerApplication>();
+    public DbSet<Document> Documents => Set<Document>();
+    public DbSet<DocumentChecklistItem> DocumentChecklistItems => Set<DocumentChecklistItem>();
+    public DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

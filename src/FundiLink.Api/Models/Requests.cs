@@ -39,3 +39,11 @@ public record SubjectInputRequest(
 public record CreateApplicationRequest(Guid ProgrammeId, ApplicationStatus Status, string? Notes, DateTime? DeadlineDate);
 
 public record UpdateApplicationStatusRequest(ApplicationStatus NewStatus, string? Notes);
+
+public record RejectDocumentRequest(string Reason);
+public record LinkDocumentRequest(Guid ChecklistItemId, Guid DocumentId);
+public record CreateInstitutionRequest(string Name, InstitutionType InstitutionType, string Province, string? Website);
+public record UpdateInstitutionRequest(string Name, InstitutionType InstitutionType, string Province, string? Website, bool IsActive);
+public record CreateProgrammeRequest(Guid InstitutionId, string Name, string? FacultyOrSchool, int? NfqLevel, int MinimumAps, List<RequiredSubjectRequest> RequiredSubjects, DateTime? ApplicationOpenDate, DateTime? ApplicationCloseDate);
+public record UpdateProgrammeRequest(string Name, string? FacultyOrSchool, int? NfqLevel, int MinimumAps, List<RequiredSubjectRequest> RequiredSubjects, DateTime? ApplicationOpenDate, DateTime? ApplicationCloseDate, bool IsActive);
+public record RequiredSubjectRequest(string SubjectName, int MinimumPercentage);

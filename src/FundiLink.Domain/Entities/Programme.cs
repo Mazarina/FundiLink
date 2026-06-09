@@ -55,4 +55,25 @@ public class Programme : BaseEntity
             IsActive = isActive
         };
     }
+
+    public void Update(
+        string name,
+        int minimumAps,
+        IEnumerable<RequiredSubject>? requiredSubjects,
+        string? facultyOrSchool,
+        int? nfqLevel,
+        DateTime? applicationOpenDate,
+        DateTime? applicationCloseDate,
+        bool isActive)
+    {
+        Name = name;
+        MinimumAps = minimumAps;
+        RequiredSubjectsJson = JsonSerializer.Serialize(requiredSubjects?.ToList() ?? []);
+        FacultyOrSchool = facultyOrSchool;
+        NfqLevel = nfqLevel;
+        ApplicationOpenDate = applicationOpenDate;
+        ApplicationCloseDate = applicationCloseDate;
+        IsActive = isActive;
+        MarkUpdated();
+    }
 }

@@ -5,7 +5,8 @@ import type { LearnerProfile } from '../types'
 import { useAuth } from '../features/auth/AuthContext'
 
 export default function ProfilePage() {
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
+  const isStaff = user?.role === 'Admin' || user?.role === 'SupportAgent' || user?.role === 'SuperAdmin'
   const [profile, setProfile] = useState<LearnerProfile | null>(null)
   const [error, setError] = useState('')
 
@@ -91,6 +92,20 @@ export default function ProfilePage() {
             <div className="font-semibold text-gray-800 text-sm">My Applications</div>
             <div className="text-xs text-gray-500 mt-1">Track your applications</div>
           </Link>
+          <Link to="/documents"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">📁</div>
+            <div className="font-semibold text-gray-800 text-sm">My Documents</div>
+            <div className="text-xs text-gray-500 mt-1">Upload & manage documents</div>
+          </Link>
+          {isStaff && (
+            <Link to="/admin/learners"
+              className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+              <div className="text-3xl mb-2">🛠️</div>
+              <div className="font-semibold text-gray-800 text-sm">Admin Portal</div>
+              <div className="text-xs text-gray-500 mt-1">Manage learners & documents</div>
+            </Link>
+          )}
         </div>
       </div>
     </main>

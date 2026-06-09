@@ -62,4 +62,10 @@ public class ProgrammeRepository : IProgrammeRepository
 
         return programmes.Select(p => (p, p.Institution.Name));
     }
+
+    public async Task AddAsync(Programme programme, CancellationToken ct)
+        => await _db.Programmes.AddAsync(programme, ct);
+
+    public async Task SaveChangesAsync(CancellationToken ct)
+        => await _db.SaveChangesAsync(ct);
 }

@@ -85,22 +85,25 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
-## Phase 4: Admin Portal and School Dashboard
-**Status:** Planned
-**Goal:** FundiLink staff can support learners; school admins can see their learners.
+## Phase 4: Document Vault and Admin Portal
+**Status:** Complete
+**Goal:** FundiLink staff can support learners; learners can manage supporting documents.
 
 ### Deliverables
-- [ ] Support Agent: learner search and profile view (with audit log)
-- [ ] Support Agent: notes and flagging
-- [ ] Admin: institution and programme data management
-- [ ] Admin: user management
-- [ ] Admin: usage reports
-- [ ] SuperAdmin: audit log viewer
-- [ ] School admin registration and school setup
-- [ ] School dashboard: learner list and progress overview
-- [ ] RBAC fully enforced and tested
-- [ ] Audit logging for all sensitive admin actions
-- [ ] Admin portal UI
+- [x] Learner document vault (upload, list, download, delete) with per-document status
+- [x] Document checklist per application with document linking
+- [x] Secure local-disk document storage with path-traversal protection
+- [x] Support Agent: learner search and overview (with audit log)
+- [x] Support Agent/Admin: document verification and rejection
+- [x] Admin: institution and programme data management (create/update)
+- [x] SuperAdmin: audit log viewer
+- [x] RBAC enforced on all admin/support endpoints
+- [x] Append-only audit logging for all sensitive admin actions
+- [x] Admin portal UI (learner search, learner detail, audit log)
+- [ ] Support Agent: notes and flagging (deferred)
+- [ ] Admin: user management (deferred)
+- [ ] Admin: usage reports (deferred)
+- [ ] School admin registration and school dashboard (deferred)
 
 ---
 

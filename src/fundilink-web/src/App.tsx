@@ -13,6 +13,12 @@ import ProgrammeDetailPage from './pages/ProgrammeDetailPage'
 import MatchesPage from './pages/MatchesPage'
 import ApplicationsPage from './pages/ApplicationsPage'
 import ApplicationDetailPage from './pages/ApplicationDetailPage'
+import DocumentsPage from './pages/DocumentsPage'
+import AdminLearnersPage from './pages/AdminLearnersPage'
+import AdminLearnerDetailPage from './pages/AdminLearnerDetailPage'
+import AuditLogPage from './pages/AuditLogPage'
+
+const ADMIN_ROLES = ['Admin', 'SupportAgent', 'SuperAdmin']
 
 function App() {
   return (
@@ -30,6 +36,10 @@ function App() {
           <Route path="/matches" element={<ProtectedRoute><MatchesPage /></ProtectedRoute>} />
           <Route path="/applications" element={<ProtectedRoute><ApplicationsPage /></ProtectedRoute>} />
           <Route path="/applications/:id" element={<ProtectedRoute><ApplicationDetailPage /></ProtectedRoute>} />
+          <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+          <Route path="/admin/learners" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnersPage /></ProtectedRoute>} />
+          <Route path="/admin/learners/:id" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnerDetailPage /></ProtectedRoute>} />
+          <Route path="/admin/audit" element={<ProtectedRoute roles={['SuperAdmin']}><AuditLogPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>

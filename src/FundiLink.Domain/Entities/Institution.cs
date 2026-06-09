@@ -32,4 +32,19 @@ public class Institution : BaseEntity
             IsActive = isActive
         };
     }
+
+    public void Update(
+        string name,
+        InstitutionType institutionType,
+        string province,
+        string? website,
+        bool isActive)
+    {
+        Name = name;
+        InstitutionType = institutionType;
+        Province = province;
+        Website = website;
+        IsActive = isActive;
+        MarkUpdated();
+    }
 }

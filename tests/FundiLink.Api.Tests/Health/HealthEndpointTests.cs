@@ -1,6 +1,10 @@
 using System.Net;
+using FundiLink.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FundiLink.Api.Tests.Health;
 
@@ -17,11 +21,20 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     ["ConnectionStrings:Default"] = "Host=localhost;Database=test;Username=test;Password=test",
-                    ["JwtSettings:SecretKey"] = "test-secret-key-that-is-long-enough-for-hmac256",
+                    ["JwtSettings:SecretKey"] = "test-secret-key-that-is-long-enough-32ch",
                     ["JwtSettings:Issuer"] = "FundiLink",
                     ["JwtSettings:Audience"] = "FundiLink",
                     ["JwtSettings:ExpiryMinutes"] = "60"
                 });
+            });
+
+            builder.ConfigureServices(services =>
+            {
+                // Replace Npgsql with InMemory DB for tests
+                services.RemoveAll<DbContextOptions<FundiLinkDbContext>>();
+                services.RemoveAll<FundiLinkDbContext>();
+                services.AddDbContext<FundiLinkDbContext>(options =>
+                    options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid()));
             });
         });
     }

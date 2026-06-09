@@ -1,4 +1,5 @@
 using FluentValidation;
+using FundiLink.Application.Features.AcademicProfile.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ public static class DependencyInjection
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        services.AddScoped<ApsCalculatorService>();
 
         return services;
     }

@@ -1,6 +1,8 @@
 using FundiLink.Application.Common.Interfaces;
 using FundiLink.Infrastructure.Persistence;
+using FundiLink.Infrastructure.Persistence.Repositories;
 using FundiLink.Infrastructure.Security;
+using FundiLink.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,7 +31,7 @@ public static class DependencyInjection
             options.Password.RequireUppercase = true;
             options.Password.RequireNonAlphanumeric = true;
             options.User.RequireUniqueEmail = true;
-            options.SignIn.RequireConfirmedEmail = true;
+            options.SignIn.RequireConfirmedEmail = false; // false for MVP ease; enable when email is real
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
         })
@@ -37,6 +39,9 @@ public static class DependencyInjection
         .AddDefaultTokenProviders();
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ILearnerRepository, LearnerRepository>();
+        services.AddScoped<IEmailService, StubEmailService>();
 
         return services;
     }

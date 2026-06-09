@@ -1,4 +1,5 @@
 using System.Text;
+using FundiLink.Api.Middleware;
 using FundiLink.Application;
 using FundiLink.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -98,6 +99,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("LocalDev");
 app.UseAuthentication();
@@ -105,6 +107,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Seed roles on startup (idempotent)
+await FundiLink.Infrastructure.Persistence.Seed.RoleSeeder.SeedRolesAsync(app.Services);
 
 app.Run();
 

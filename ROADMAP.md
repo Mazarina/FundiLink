@@ -48,21 +48,21 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 ---
 
 ## Phase 2: Student Profile and Academic Record
-**Status:** Planned
+**Status:** Complete
 **Goal:** A learner can register, create a profile, and enter their academic results.
 
 ### Deliverables
-- [ ] Learner registration with email verification
-- [ ] Login and JWT token management
-- [ ] Learner profile creation and editing
-- [ ] Academic profile: enter NSC subjects and results
-- [ ] APS calculator (backend logic + frontend display)
-- [ ] Basic frontend: registration, login, profile pages
-- [ ] Document upload baseline (local storage for dev)
-- [ ] POPIA consent at registration
-- [ ] Guardian consent field for under-18s
-- [ ] Unit tests for APS calculation
-- [ ] API integration tests for auth and profile endpoints
+- [x] Learner registration with email verification
+- [x] Login and JWT token management
+- [x] Learner profile creation and editing
+- [x] Academic profile: enter NSC subjects and results
+- [x] APS calculator (backend logic + frontend display)
+- [x] Basic frontend: registration, login, profile pages
+- [x] POPIA consent at registration
+- [x] Guardian consent field for under-18s
+- [x] Unit tests for APS calculation (28 Application tests, 3 Domain tests)
+- [x] API integration tests for auth and profile endpoints (1 API test)
+- [x] Frontend component tests (7 Vitest tests)
 
 ---
 

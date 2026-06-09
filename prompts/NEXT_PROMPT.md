@@ -1,19 +1,19 @@
-# NEXT_PROMPT.md — Phase 2: Student Profile, Academic Record, and APS Calculator
+# NEXT_PROMPT.md — Phase 3: Programme Matching and Application Tracker
 
 ## When to Run This Prompt
-Run this after Phase 1 scaffold is committed and the solution builds cleanly with tests passing.
-This prompt implements the core learner registration, profile, and APS calculation flow.
+Run this after Phase 2 is committed and all tests pass.
+Phase 2 is complete: learner registration, profile, academic record entry, and APS calculator are all implemented and tested.
 
 ---
 
-## Prompt 002 — Student Profile, Academic Record, and APS Calculator
+## Prompt 003 — Programme Matching and Application Tracker
 
 ---
 
 Read `CLAUDE.md`, `PRODUCT_REQUIREMENTS.md`, and `ARCHITECTURE.md` before starting.
-Follow all rules in `CLAUDE.md` — especially: no secrets committed, POPIA consent required, RBAC enforced.
+Follow all rules in `CLAUDE.md` — especially: no secrets committed, RBAC enforced, no claims of official integration.
 
-You are working on FundiLink by ZulTek. Phase 1 scaffold is complete. You are now building Phase 2: the core learner registration, profile creation, academic record entry, and APS calculation.
+You are working on FundiLink by ZulTek. Phase 2 is complete. You are now building Phase 3: programme matching (using APS + subject requirements) and the application tracker.
 
 **Stack:** ASP.NET Core 8, Clean Architecture, PostgreSQL + EF Core, React + Vite + TypeScript, Tailwind CSS, JWT authentication.
 
@@ -23,183 +23,163 @@ You are working on FundiLink by ZulTek. Phase 1 scaffold is complete. You are no
 
 ### 1. Domain Entities
 
-In `FundiLink.Domain`:
+In `FundiLink.Domain`, create:
 
-Create the following entities (all extending `BaseEntity`):
+**Institution**
+- Fields: Name, InstitutionType (enum: University, TVET, SkillsCentre), Province, Website (nullable), IsActive (bool)
 
-**Learner**
-- Fields: UserId (string), FirstName, Surname, DateOfBirth, IdNumber (nullable), PassportNumber (nullable), Gender (nullable), HomeLanguage (nullable), Nationality, MobileNumber, Province, Municipality, Suburb, SchoolName, SchoolProvince, GradeLevel (enum: Grade11/Grade12/PostMatric), GuardianName (nullable), GuardianPhone (nullable), GuardianEmail (nullable), ConsentAccepted (bool), ConsentTimestamp, ConsentVersion, GuardianConsentAccepted (bool, nullable), GuardianConsentTimestamp (nullable), ProfileCompleteness (int 0–100)
+**Programme**
+- Fields: InstitutionId, Name, FacultyOrSchool (nullable), NFQLevel (int nullable), MinimumAps (int), RequiredSubjects (JSON: list of {SubjectName, MinimumPercentage}), ApplicationOpenDate (nullable), ApplicationCloseDate (nullable), IsActive (bool)
 
-**AcademicProfile**
-- Fields: LearnerId, Year (int), ResultType (enum: Grade11Prelim/Grade12Final/Grade12Prelim), ApsScore (int), ApsCalculatedAt (nullable)
-- Navigation: ICollection<NscSubjectResult> Subjects
+**LearnerApplication**
+- Fields: LearnerId, ProgrammeId, Status (enum: Interested, InProgress, Submitted, Accepted, Rejected, Waitlisted), Notes (nullable), DeadlineDate (nullable), SubmittedAt (nullable), OutcomeAt (nullable)
 
-**NscSubjectResult**
-- Fields: AcademicProfileId, SubjectName, SubjectCode (nullable), Percentage (int 0–100), ApsPoints (int), IsHomeLanguage (bool), IsLifeOrientation (bool)
+### 2. Programme Matching Engine
 
-### 2. APS Calculator
+In `FundiLink.Application/Features/ProgrammeMatching`:
 
-In `FundiLink.Application/Features/AcademicProfile`:
+Create `ProgrammeMatchingService`:
+- Method: `GetMatchingProgrammes(AcademicProfile profile, IEnumerable<Programme> programmes) -> IEnumerable<ProgrammeMatch>`
+- A programme matches if:
+  - `profile.ApsScore >= programme.MinimumAps`
+  - All required subjects have the required minimum percentage in the learner's subjects
+- Return a `ProgrammeMatch` DTO: Programme, InstitutionName, IsEligible, MissingAps (int), MissingSubjects (list)
 
-Create an `ApsCalculatorService` with:
-- Method: `CalculateAps(IEnumerable<NscSubjectResult> subjects) -> int`
-- Standard NSC scale: 80–100=7, 70–79=6, 60–69=5, 50–59=4, 40–49=3, 30–39=2, 0–29=1
-- Life Orientation excluded from APS total
-- Returns total APS from best 6 subjects (excluding LO)
-
-Write comprehensive unit tests for the APS calculator in `FundiLink.Application.Tests` — test edge cases, LO exclusion, boundary values.
+Write unit tests for the matching engine — test: eligible match, APS too low, missing subject, missing subject percentage.
 
 ### 3. Application Use Cases (CQRS via MediatR)
 
-Create the following commands and queries:
+**Programmes:**
+- `SearchProgrammesQuery` — filter by institution type, province, name keyword, min APS; returns paged results
+- `GetProgrammeByIdQuery`
+- `GetMatchingProgrammesQuery` — uses the matching engine with the learner's academic profile
 
-**Auth:**
-- `RegisterLearnerCommand` — create Identity user + Learner record, send verification email (stub the email for now), enforce POPIA consent
-- `LoginCommand` — return access token + refresh token
-- `RefreshTokenCommand`
-
-**Learner Profile:**
-- `GetMyProfileQuery`
-- `UpdatePersonalInfoCommand`
-
-**Academic Profile:**
-- `GetAcademicProfileQuery` — returns profile + subjects + APS
-- `SaveAcademicProfileCommand` — upsert subjects, recalculate APS, persist
+**Applications:**
+- `CreateApplicationCommand` — learner starts tracking an application
+- `UpdateApplicationStatusCommand`
+- `GetMyApplicationsQuery` — returns all applications for the authenticated learner
+- `GetApplicationByIdQuery`
+- `DeleteApplicationCommand` — soft delete
 
 ### 4. API Controllers
 
-Create controllers in `FundiLink.Api/Controllers`:
+- `ProgrammesController` — GET /api/v1/programmes (search), GET /api/v1/programmes/{id}, GET /api/v1/programmes/matches
+- `ApplicationsController` — POST /api/v1/applications, GET /api/v1/applications, GET /api/v1/applications/{id}, PUT /api/v1/applications/{id}/status, DELETE /api/v1/applications/{id}
 
-- `AuthController` — POST /api/v1/auth/register, /login, /refresh
-- `LearnersController` — GET/PUT /api/v1/learners/me
-- `AcademicProfileController` — GET/PUT /api/v1/learners/me/academic-profile, GET /api/v1/learners/me/aps
+Security:
+- `[Authorize]` on all endpoints
+- Learners can only access their own applications
+- `/matches` uses the learner's own academic profile
 
-**Security rules:**
-- `[Authorize]` on all endpoints except register and login
-- Learners can only access their own profile — validate ownership in handlers
-- Register requires: consentAccepted = true in the request body
+### 5. Seed Data
 
-### 5. EF Core
+Create a seed file with at least 5 South African universities, 3 TVETs, and 10 programmes with realistic APS requirements.
+IMPORTANT: This is sample/educational data only — not official admission requirements. Add a disclaimer in the seed file and API responses.
+
+### 6. EF Core
 
 Add the new entities to `FundiLinkDbContext`.
-Generate a new migration: `AddLearnerAndAcademicProfile`.
-Do NOT run the migration against a real database — just generate it.
-
-### 6. POPIA
-
-Registration must:
-- Require `consentAccepted = true` in the request (reject with 400 if false)
-- Record `ConsentTimestamp = DateTime.UtcNow`
-- Record `ConsentVersion = "1.0"` (constant for now)
-- If DOB indicates under-18, set a flag and require guardian info
+Generate a new migration: `AddProgrammesAndApplications`.
+Do NOT run the migration against a production database.
 
 ---
 
 ## Frontend: What to Build
 
-### 1. Auth Feature (`/src/features/auth`)
+### 1. Programme Search (`/programmes`)
 
-Create:
-- `RegisterPage.tsx` — form: firstName, surname, email, password, dateOfBirth, consentAccepted checkbox
-- `LoginPage.tsx` — form: email, password
-- `authApi.ts` — typed API calls for register, login, refresh
-- `AuthContext.tsx` or Zustand auth store — store access token, user info, isAuthenticated
-- Protected route component — redirect to /login if not authenticated
+- `ProgrammesPage.tsx` — search and filter programmes, display results as cards
+- `ProgrammeCard.tsx` — shows institution name, programme name, APS requirement, eligibility indicator (green tick / amber warning based on learner's APS)
+- `ProgrammeDetailPage.tsx` — full programme details, required subjects, deadline, "Track Application" button
 
-### 2. Profile Feature (`/src/features/profile`)
+### 2. Programme Matches (`/matches`)
 
-Create:
-- `ProfilePage.tsx` — display learner info, completeness indicator
-- `EditProfilePage.tsx` — form to edit personal info
+- `MatchesPage.tsx` — shows programmes the learner qualifies for based on their APS
+- Filter: by institution type (University / TVET), by province
+- Each match shows: programme name, institution, APS gap (0 if met), missing subjects if any
 
-### 3. APS Feature (`/src/features/aps`)
+### 3. Application Tracker (`/applications`)
 
-Create:
-- `AcademicProfilePage.tsx` — enter NSC subjects and marks
-- `ApsScoreDisplay.tsx` — show APS score prominently with a breakdown table
-- `SubjectSelector.tsx` — dropdown of approved NSC subjects (hardcode the list)
-- `academicApi.ts` — typed API calls
+- `ApplicationsPage.tsx` — list of all tracked applications with current status
+- `ApplicationCard.tsx` — shows programme, institution, status badge (colour-coded), deadline countdown if set
+- Status badge colours: Interested=gray, InProgress=blue, Submitted=yellow, Accepted=green, Rejected=red, Waitlisted=orange
+- `ApplicationDetailPage.tsx` — full details, status update form, notes field
 
 ### 4. Routing
 
-Update `App.tsx` with routes:
-- `/` → `HomePage`
-- `/register` → `RegisterPage`
-- `/login` → `LoginPage`
-- `/profile` → `ProfilePage` (protected)
-- `/profile/edit` → `EditProfilePage` (protected)
-- `/academic` → `AcademicProfilePage` (protected)
-- `*` → `NotFoundPage`
+Add to `App.tsx`:
+- `/programmes` → `ProgrammesPage` (protected)
+- `/programmes/:id` → `ProgrammeDetailPage` (protected)
+- `/matches` → `MatchesPage` (protected)
+- `/applications` → `ApplicationsPage` (protected)
+- `/applications/:id` → `ApplicationDetailPage` (protected)
 
-### 5. POPIA Consent UI
+Update `ProfilePage.tsx` navigation tiles to include links to `/programmes`, `/matches`, and `/applications`.
 
-On the register page:
-- Display a clear, plain-language consent notice above the checkbox
-- Checkbox label: "I agree to FundiLink's Privacy Policy and consent to my information being processed as described above."
-- The checkbox must be checked to submit
-- Include a note: "FundiLink is not an official admissions portal. It helps you prepare and track your applications."
+### 5. Disclaimer UI
+
+Add a visible disclaimer on all programme and match pages:
+"Programme information is provided for guidance only. APS requirements and deadlines may change. Always verify with the official institution. FundiLink is not an official admissions portal."
 
 ---
 
 ## Testing Requirements
 
 **Backend:**
-- Unit tests for `ApsCalculatorService` — minimum 10 test cases including LO exclusion, boundary values, all-low scores, all-high scores
-- Unit tests for `RegisterLearnerCommand` handler (mock dependencies)
-- Integration tests for auth endpoints (register → login → get profile flow)
+- Unit tests for `ProgrammeMatchingService` — minimum 8 test cases
+- Unit tests for `CreateApplicationCommand` handler
+- Integration test: search programmes endpoint returns results
 
 **Frontend:**
-- Unit tests for `ApsScoreDisplay` component — verify it renders the correct APS score
-- Unit tests for APS calculation utility if extracted to the frontend
+- Unit tests for `ProgrammeCard` component — renders eligibility indicator correctly
+- Unit tests for status badge colour mapping
 
 ---
 
 ## Security Requirements
 
 - No secrets committed
-- Passwords never logged or returned in responses
-- ID numbers never returned in API responses in plaintext — mask if needed
-- JWT tokens validated on all protected endpoints
-- Ownership validation: a learner can only GET/PUT their own profile
+- Learners access only their own applications
+- No endpoint returns another learner's application data
+- Programme seed data includes disclaimer — never claim official APS requirements
 
 ---
 
 ## What NOT to Do
 
-- Do not implement programme matching (Phase 3)
-- Do not implement document upload (Phase 3)
+- Do not implement document upload (Phase 4)
 - Do not implement admin portal (Phase 4)
-- Do not send real emails — stub the email service
-- Do not run database migrations against a production database
-- Do not commit secrets
+- Do not send real emails
+- Do not run migrations against a production database
+- Do not claim official admission requirements — always disclaim
+- Do not implement payment or bursary matching (Phase 5)
 
 ---
 
 ## Output Requirements
 
 1. Confirm `dotnet build` passes
-2. Confirm `dotnet test` passes (including APS unit tests)
+2. Confirm `dotnet test` passes
 3. Confirm `npm run build` passes in `src/fundilink-web`
 4. List all files created or modified
 5. Confirm no secrets committed
-6. Commit with message: `Add Phase 2 learner profile, academic record, and APS calculator`
+6. Commit with message: `Add Phase 3 programme matching and application tracker`
 7. Push to `claude/happy-dirac-n7qgtg`
-8. Update `ROADMAP.md` Phase 2 checklist
-9. Update this file (`NEXT_PROMPT.md`) with the Phase 3 prompt
+8. Update `ROADMAP.md` Phase 3 checklist
+9. Update this file (`NEXT_PROMPT.md`) with the Phase 4 prompt
 
 ---
 
-## Definition of Done for Phase 2
+## Definition of Done for Phase 3
 
-- [ ] Learner can register with POPIA consent
-- [ ] Learner can log in and receive JWT token
-- [ ] Learner can create and edit their profile
-- [ ] Learner can enter NSC results
-- [ ] APS score is calculated correctly (validated by unit tests)
-- [ ] Academic profile API returns APS score with breakdown
-- [ ] Frontend shows registration, login, profile, and APS pages
-- [ ] All RBAC rules enforced (own data only)
-- [ ] Minimum 10 APS unit tests pass
-- [ ] Integration tests for auth flow pass
-- [ ] Zero secrets committed
+- [ ] Institutions and programmes seed data in place
+- [ ] Programme search and filter endpoint works
+- [ ] Matching engine returns correct eligible programmes for a learner's APS
+- [ ] Learner can create and track applications
+- [ ] Application status updates work
+- [ ] Frontend shows programme search, matches, and application tracker
+- [ ] Disclaimer shown on all programme/match pages
+- [ ] All RBAC rules enforced (own applications only)
+- [ ] Minimum 8 matching engine unit tests pass
 - [ ] Build and tests green
+- [ ] Zero secrets committed

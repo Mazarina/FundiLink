@@ -1,0 +1,246 @@
+# 15 — API Specification
+
+## Title
+FundiLink — REST API Specification
+
+## Purpose
+Define the API contracts for FundiLink SmartApply. This document is the source of truth for API design decisions.
+
+---
+
+## General Conventions
+
+- **Base URL:** `/api/v1`
+- **Format:** JSON
+- **Auth:** `Authorization: Bearer <jwt_token>`
+- **Versioning:** URL-based (`/api/v1/...`)
+- **Pagination:** `?page=1&pageSize=20`
+- **Error format:** RFC 7807 Problem Details
+
+### Standard Response Envelope
+```json
+{
+  "data": { ... },
+  "errors": [],
+  "meta": {
+    "page": 1,
+    "pageSize": 20,
+    "totalCount": 100
+  }
+}
+```
+
+### Standard Error Response
+```json
+{
+  "type": "https://fundilink.co.za/errors/validation",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "FirstName": ["First name is required."]
+  }
+}
+```
+
+---
+
+## Auth Endpoints
+
+### POST /api/v1/auth/register
+Register a new learner.
+- Body: `{ email, password, firstName, surname, consentAccepted }`
+- Response: `201 Created` with user ID; verification email sent
+- No auth required
+
+### POST /api/v1/auth/login
+Login and receive JWT tokens.
+- Body: `{ email, password }`
+- Response: `{ accessToken, refreshToken, expiresIn }`
+- No auth required
+
+### POST /api/v1/auth/refresh
+Refresh access token using refresh token.
+- Body: `{ refreshToken }`
+- Response: `{ accessToken, refreshToken, expiresIn }`
+
+### POST /api/v1/auth/logout
+Invalidate refresh token.
+- Auth required
+- Body: `{ refreshToken }`
+
+### POST /api/v1/auth/forgot-password
+Request password reset email.
+- Body: `{ email }`
+
+### POST /api/v1/auth/reset-password
+Reset password with token.
+- Body: `{ token, email, newPassword }`
+
+---
+
+## Learner Profile Endpoints
+
+### GET /api/v1/learners/me
+Get the authenticated learner's profile.
+- Auth: Student role
+
+### PUT /api/v1/learners/me
+Update the learner's personal profile.
+- Auth: Student role
+- Body: profile fields
+
+### GET /api/v1/learners/{id}
+Get a specific learner's profile.
+- Auth: SupportAgent, Admin, SuperAdmin
+- Audit logged
+
+---
+
+## Academic Profile Endpoints
+
+### GET /api/v1/learners/me/academic-profile
+Get the learner's academic profile and results.
+- Auth: Student
+
+### PUT /api/v1/learners/me/academic-profile
+Create or update academic profile and NSC results.
+- Auth: Student
+- Body: `{ year, resultType, subjects: [{ subjectName, percentage }] }`
+- Response includes calculated APS score
+
+### GET /api/v1/learners/me/aps
+Get the learner's current APS score with breakdown.
+- Auth: Student
+
+---
+
+## Programme Endpoints
+
+### GET /api/v1/programmes
+Search and filter programmes.
+- Auth: Student (or public in future)
+- Query: `?province=Gauteng&type=University&field=Engineering&page=1&pageSize=20`
+
+### GET /api/v1/programmes/matches
+Get programmes matched to the authenticated learner's APS and subjects.
+- Auth: Student
+- Returns ranked results with match strength
+
+### GET /api/v1/programmes/{id}
+Get detailed programme information.
+- Auth: Student
+
+---
+
+## Application Endpoints
+
+### GET /api/v1/applications
+Get the learner's application tracker.
+- Auth: Student
+
+### POST /api/v1/applications
+Add a new application to the tracker.
+- Auth: Student
+- Body: `{ programmeId, institutionId, deadline, officialPortalUrl }`
+
+### PUT /api/v1/applications/{id}
+Update an application (status, notes, deadline).
+- Auth: Student (own applications only)
+
+### DELETE /api/v1/applications/{id}
+Remove an application from the tracker.
+- Auth: Student (own applications only)
+
+---
+
+## Document Endpoints
+
+### GET /api/v1/documents
+Get the learner's document list.
+- Auth: Student
+
+### POST /api/v1/documents/upload
+Upload a document.
+- Auth: Student
+- Body: multipart/form-data with file and metadata
+- Returns document metadata
+
+### GET /api/v1/documents/{id}/download
+Download a document file.
+- Auth: Student (own documents), SupportAgent (with audit log)
+
+### DELETE /api/v1/documents/{id}
+Soft-delete a document.
+- Auth: Student (own documents)
+
+---
+
+## Notification Endpoints
+
+### GET /api/v1/notifications
+Get the learner's notifications.
+- Auth: Student
+
+### PUT /api/v1/notifications/{id}/read
+Mark notification as read.
+- Auth: Student
+
+---
+
+## Admin Endpoints
+
+### GET /api/v1/admin/learners
+Search learners.
+- Auth: SupportAgent, Admin
+
+### GET /api/v1/admin/learners/{id}
+Get a specific learner's profile.
+- Auth: SupportAgent, Admin
+- Audit logged
+
+### POST /api/v1/admin/learners/{id}/notes
+Add a support note to a learner's record.
+- Auth: SupportAgent, Admin
+
+### GET /api/v1/admin/institutions
+Manage institutions.
+- Auth: Admin, SuperAdmin
+
+### POST /api/v1/admin/institutions
+Create institution.
+- Auth: Admin
+
+### PUT /api/v1/admin/institutions/{id}
+Update institution.
+- Auth: Admin
+
+### GET /api/v1/admin/audit-logs
+View audit logs.
+- Auth: SuperAdmin only
+
+---
+
+## School Endpoints
+
+### GET /api/v1/schools/me/learners
+Get the school's learner list.
+- Auth: SchoolAdmin
+
+### GET /api/v1/schools/me/dashboard
+Get aggregate school dashboard metrics.
+- Auth: SchoolAdmin
+
+---
+
+## Health
+
+### GET /health
+Health check — no auth required.
+- Response: `{ status: "healthy", timestamp: "..." }`
+
+---
+
+## Next Actions
+- Implement endpoints in Phase 1–4
+- Keep this document updated as contracts change
+- Generate Swagger from actual code; use this as design reference

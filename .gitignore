@@ -1,0 +1,211 @@
+## ============================================================
+## .gitignore — FundiLink by ZulTek
+## Covers: .NET, Node/React/Vite, VS, VS Code, Rider, secrets
+## ============================================================
+
+## ── Secrets and Environment Files (NEVER commit these) ──────
+.env
+.env.*
+.env.local
+.env.development
+.env.staging
+.env.production
+*.env
+secrets.json
+appsettings.Production.json
+appsettings.Staging.json
+appsettings.Local.json
+**/appsettings.Production.json
+**/appsettings.Staging.json
+**/appsettings.Local.json
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.pem
+**/*.cer
+**/*.crt
+
+## ── .NET User Secrets (local only, never commit) ───────────
+**/secrets.json
+%APPDATA%/Microsoft/UserSecrets/
+~/.microsoft/usersecrets/
+
+## ── .NET Build Output ───────────────────────────────────────
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+.vs/
+_ReSharper*/
+*.DotSettings.user
+TestResults/
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+coverage/
+coverage-report/
+
+## ── .NET NuGet ───────────────────────────────────────────────
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!packages/repositories.config
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ── .NET Publish ─────────────────────────────────────────────
+**/publish/
+**/published/
+
+## ── Entity Framework Migrations (keep migrations, ignore leftovers) ─
+# Keep: Migrations/*.cs and Migrations/*Designer.cs
+# Ignore EF tools temp output only — do NOT ignore the Migrations folder
+
+## ── Visual Studio ────────────────────────────────────────────
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+.vs/
+*.pidb
+*.svclog
+*.scc
+ipch/
+*.aps
+*.pch
+*.wsuo
+*.ncb
+*.pdb
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.ipch
+
+## ── VS Code ──────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.code-workspace
+.history/
+
+## ── JetBrains Rider ──────────────────────────────────────────
+.idea/
+*.sln.iml
+*.iws
+out/
+.idea_modules/
+
+## ── Node / npm / yarn / pnpm ─────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+## ── Vite / React Build Output ───────────────────────────────
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+
+## ── TypeScript ───────────────────────────────────────────────
+*.tsbuildinfo
+
+## ── Storybook ────────────────────────────────────────────────
+storybook-static/
+
+## ── Testing ──────────────────────────────────────────────────
+coverage/
+.nyc_output/
+cypress/screenshots/
+cypress/videos/
+playwright-report/
+test-results/
+
+## ── Docker ───────────────────────────────────────────────────
+# Keep docker-compose.yml but ignore local override files
+docker-compose.override.yml
+docker-compose.local.yml
+.docker/
+
+## ── Database ─────────────────────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+*.bak
+pgdata/
+postgres-data/
+
+## ── Logs ─────────────────────────────────────────────────────
+*.log
+logs/
+log/
+*.log.*
+
+## ── macOS ────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+## ── Windows ──────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+## ── Linux ────────────────────────────────────────────────────
+*~
+.nfs*
+
+## ── Uploads / User Files (never commit user documents) ───────
+uploads/
+local-uploads/
+document-storage/
+wwwroot/uploads/
+
+## ── Temporary Files ──────────────────────────────────────────
+*.tmp
+*.temp
+*.swp
+*.bak
+*.orig
+*.cache
+
+## ── Claude Code ──────────────────────────────────────────────
+.claude/

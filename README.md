@@ -1,0 +1,124 @@
+# FundiLink by ZulTek
+
+> **One profile. Every opportunity.**
+
+FundiLink is a South African student opportunity platform that helps learners — especially those from rural and under-resourced communities — navigate the complex landscape of higher education, funding, and skills development.
+
+---
+
+## What Is FundiLink?
+
+Many South African learners qualify for university, TVET college, bursaries, and skills programmes, but never access them because the process is fragmented, confusing, and inaccessible. FundiLink solves this by giving every learner one intelligent profile that works across multiple opportunity types.
+
+**FundiLink is not an official government or institution admissions portal.** It helps learners prepare, organise, and track their applications. Final submissions occur through official portals unless a formal integration partnership exists.
+
+---
+
+## MVP: FundiLink SmartApply
+
+The MVP focuses on the core student application workflow:
+
+| Feature | Description |
+|---|---|
+| Education Profile | One profile capturing personal, academic, and contact information |
+| APS Calculator | Automatic APS score calculation from NSC results |
+| Programme Matching | Match learner APS and subjects to qualifying programmes |
+| Document Vault | Checklist and secure storage for required application documents |
+| Application Tracker | Track application status across multiple institutions |
+| Notifications | Email and in-app alerts for deadlines and status changes |
+| Admin Portal | Support agent and admin management tools |
+| School Dashboard | Basic school-level view for pilot schools |
+
+---
+
+## Target Users
+
+- **Students/Learners** — Grade 11, Grade 12, and recent matriculants
+- **School Administrators** — Teachers and counsellors supporting learners
+- **Support Agents** — FundiLink staff assisting learners remotely
+- **Admins / SuperAdmins** — ZulTek operations and platform management
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | ASP.NET Core (.NET 8/9), Clean Architecture |
+| Database | PostgreSQL, Entity Framework Core |
+| API | REST, JWT Authentication |
+| Frontend | React + Vite + TypeScript, Tailwind CSS |
+| Containerisation | Docker Compose (local dev) |
+| CI/CD | GitHub Actions |
+
+---
+
+## Repository Structure
+
+```
+/
+├── CLAUDE.md                  # AI agent instructions (read first)
+├── README.md                  # This file
+├── PROJECT_CONTEXT.md         # Full product context
+├── PRODUCT_REQUIREMENTS.md    # MVP requirements
+├── ARCHITECTURE.md            # Technical architecture
+├── SECURITY.md                # Security baseline
+├── ROADMAP.md                 # Phased development plan
+├── CONTRIBUTING.md            # Contribution guidelines
+├── .gitignore
+├── docs/                      # Detailed planning documents
+│   ├── 01-product-vision.md
+│   ├── 02-business-plan.md
+│   ├── ... (20 documents)
+├── prompts/                   # Claude Code prompts log
+│   ├── README.md
+│   ├── 000-initial-project-setup.md
+│   └── NEXT_PROMPT.md
+├── src/                       # Application source (created in next phase)
+│   ├── FundiLink.Api/
+│   ├── FundiLink.Application/
+│   ├── FundiLink.Domain/
+│   ├── FundiLink.Infrastructure/
+│   └── fundilink-web/
+└── tests/                     # Test projects (created in next phase)
+```
+
+---
+
+## Local Setup
+
+> **Note:** Application code has not been scaffolded yet. Setup instructions will be added in the next phase.
+
+Prerequisites (for future setup):
+- .NET 8 SDK or later
+- Node.js 20+
+- Docker Desktop (for local PostgreSQL)
+- A PostgreSQL client (e.g., pgAdmin, DBeaver)
+
+---
+
+## Security
+
+- No secrets, API keys, or real connection strings are stored in this repository
+- Use `dotnet user-secrets` for local development
+- See `SECURITY.md` for the full security baseline
+
+---
+
+## Project Status
+
+**Current phase:** Phase 0 — Documentation and Planning Foundation
+
+The application code has not been created yet. This repository currently contains only documentation, planning files, and project standards.
+
+---
+
+## About ZulTek
+
+ZulTek is the company behind FundiLink. FundiLink is ZulTek's first flagship product, built to create real access to opportunity for South African learners.
+
+---
+
+## Licence
+
+Proprietary — ZulTek. All rights reserved. Not open source at this stage.

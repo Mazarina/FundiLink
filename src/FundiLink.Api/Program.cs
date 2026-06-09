@@ -111,6 +111,9 @@ app.MapHealthChecks("/health");
 // Seed roles on startup (idempotent)
 await FundiLink.Infrastructure.Persistence.Seed.RoleSeeder.SeedRolesAsync(app.Services);
 
+// Seed sample programmes for guidance only (runs once, when no institutions exist)
+await FundiLink.Infrastructure.Persistence.Seed.ProgrammeSeedData.SeedAsync(app.Services);
+
 app.Run();
 
 // Required for WebApplicationFactory in integration tests

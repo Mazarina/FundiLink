@@ -60,3 +60,43 @@ export interface SubjectInput {
   isLifeOrientation: boolean
   subjectCode?: string
 }
+
+export type InstitutionType = 'University' | 'TVET' | 'SkillsCentre'
+export type ApplicationStatus = 'Interested' | 'InProgress' | 'Submitted' | 'Accepted' | 'Rejected' | 'Waitlisted'
+
+export interface Programme {
+  id: string
+  name: string
+  institutionName: string
+  institutionType: InstitutionType
+  province: string
+  minimumAps: number
+  nfqLevel?: number
+  applicationOpenDate?: string
+  applicationCloseDate?: string
+  requiredSubjects?: Array<{ subjectName: string; minimumPercentage: number }>
+}
+
+export interface ProgrammeMatch extends Programme {
+  isEligible: boolean
+  apsGap: number
+  missingSubjects: string[]
+}
+
+export interface PagedResult<T> {
+  items: T[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface LearnerApplication {
+  id: string
+  programmeId: string
+  programmeName: string
+  institutionName: string
+  status: ApplicationStatus
+  notes?: string
+  deadlineDate?: string
+  submittedAt?: string
+}

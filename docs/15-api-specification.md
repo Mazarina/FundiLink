@@ -118,16 +118,19 @@ Get the learner's current APS score with breakdown.
 
 ### GET /api/v1/programmes
 Search and filter programmes.
-- Auth: Student (or public in future)
-- Query: `?province=Gauteng&type=University&field=Engineering&page=1&pageSize=20`
+- Auth: Student (implemented as authenticated; may be made public in future)
+- Query: `?keyword=Engineering&type=University&province=Gauteng&page=1&pageSize=20`
+- Response: `PagedResult<ProgrammeDto>` — `{ items, total, page, pageSize }`
+- NOTE: Programme data is for guidance only — not official admission requirements.
 
 ### GET /api/v1/programmes/matches
 Get programmes matched to the authenticated learner's APS and subjects.
 - Auth: Student
-- Returns ranked results with match strength
+- Returns `ProgrammeMatchDto[]` with `isEligible`, `apsGap`, and `missingSubjects`
+- Returns an empty list if the learner has no academic profile.
 
 ### GET /api/v1/programmes/{id}
-Get detailed programme information.
+Get detailed programme information (includes required subjects).
 - Auth: Student
 
 ---
@@ -138,17 +141,23 @@ Get detailed programme information.
 Get the learner's application tracker.
 - Auth: Student
 
+### GET /api/v1/applications/{id}
+Get a single tracked application.
+- Auth: Student (own applications only)
+
 ### POST /api/v1/applications
 Add a new application to the tracker.
 - Auth: Student
-- Body: `{ programmeId, institutionId, deadline, officialPortalUrl }`
+- Body: `{ programmeId, status, notes?, deadlineDate? }`
+- Returns: `201 Created` with `{ id }`
 
-### PUT /api/v1/applications/{id}
-Update an application (status, notes, deadline).
+### PUT /api/v1/applications/{id}/status
+Update an application's status and notes.
 - Auth: Student (own applications only)
+- Body: `{ newStatus, notes? }`
 
 ### DELETE /api/v1/applications/{id}
-Remove an application from the tracker.
+Remove an application from the tracker (soft delete).
 - Auth: Student (own applications only)
 
 ---

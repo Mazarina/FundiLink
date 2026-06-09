@@ -35,3 +35,7 @@ public record SubjectInputRequest(
     bool IsLifeOrientation,
     string? SubjectCode = null
 );
+
+public record CreateApplicationRequest(Guid ProgrammeId, ApplicationStatus Status, string? Notes, DateTime? DeadlineDate);
+
+public record UpdateApplicationStatusRequest(ApplicationStatus NewStatus, string? Notes);

@@ -14,6 +14,9 @@ public class FundiLinkDbContext : IdentityDbContext, IApplicationDbContext
     public DbSet<Learner> Learners => Set<Learner>();
     public DbSet<AcademicProfile> AcademicProfiles => Set<AcademicProfile>();
     public DbSet<NscSubjectResult> NscSubjectResults => Set<NscSubjectResult>();
+    public DbSet<Institution> Institutions => Set<Institution>();
+    public DbSet<Programme> Programmes => Set<Programme>();
+    public DbSet<LearnerApplication> LearnerApplications => Set<LearnerApplication>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

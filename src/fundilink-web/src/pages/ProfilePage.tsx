@@ -73,11 +73,24 @@ export default function ProfilePage() {
             <div className="font-semibold text-gray-800 text-sm">Academic Profile & APS</div>
             <div className="text-xs text-gray-500 mt-1">Enter your results</div>
           </Link>
-          <div className="bg-white rounded-xl p-5 shadow-sm opacity-50 text-center">
-            <div className="text-3xl mb-2">📄</div>
-            <div className="font-semibold text-gray-800 text-sm">Documents</div>
-            <div className="text-xs text-gray-500 mt-1">Coming in Phase 3</div>
-          </div>
+          <Link to="/programmes"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">🎓</div>
+            <div className="font-semibold text-gray-800 text-sm">Browse Programmes</div>
+            <div className="text-xs text-gray-500 mt-1">Find courses & institutions</div>
+          </Link>
+          <Link to="/matches"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">✨</div>
+            <div className="font-semibold text-gray-800 text-sm">My Matches</div>
+            <div className="text-xs text-gray-500 mt-1">Programmes you may qualify for</div>
+          </Link>
+          <Link to="/applications"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">📋</div>
+            <div className="font-semibold text-gray-800 text-sm">My Applications</div>
+            <div className="text-xs text-gray-500 mt-1">Track your applications</div>
+          </Link>
         </div>
       </div>
     </main>

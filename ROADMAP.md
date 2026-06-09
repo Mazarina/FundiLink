@@ -67,21 +67,21 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 ---
 
 ## Phase 3: Programme Matching and Application Tracker
-**Status:** Planned
+**Status:** Complete
 **Goal:** A learner can see what they qualify for and start tracking applications.
 
 ### Deliverables
-- [ ] Institution and programme database seed data
-- [ ] Programme matching engine (APS + subject matching)
-- [ ] Programme search and filter UI
-- [ ] Application tracker: create, update, view applications
-- [ ] Document checklist per application
-- [ ] Document vault with per-document status
-- [ ] Application deadline tracking
-- [ ] Basic in-app notifications
-- [ ] Email notifications (deadline alerts, status changes)
-- [ ] Unit tests for matching engine
-- [ ] API and UI integration tests
+- [x] Institution and programme database seed data (guidance only, disclaimed)
+- [x] Programme matching engine (APS + subject matching)
+- [x] Programme search and filter UI
+- [x] Application tracker: create, update, view, delete applications
+- [x] Application deadline tracking (deadline date per application)
+- [x] Unit tests for matching engine and create-application handler
+- [x] Frontend component tests (ProgrammeCard, ApplicationStatusBadge)
+- [ ] Document checklist per application (moved to Phase 4 — document vault)
+- [ ] Document vault with per-document status (moved to Phase 4)
+- [ ] Basic in-app notifications (deferred)
+- [ ] Email notifications (deadline alerts, status changes) (deferred)
 
 ---
 

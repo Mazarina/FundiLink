@@ -41,6 +41,8 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ILearnerRepository, LearnerRepository>();
+        services.AddScoped<IProgrammeRepository, ProgrammeRepository>();
+        services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IEmailService, StubEmailService>();
 
         return services;

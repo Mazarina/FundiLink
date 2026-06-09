@@ -1,0 +1,6 @@
+@FundiLink.Api_HostAddress = http://localhost:5183
+
+GET {{FundiLink.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

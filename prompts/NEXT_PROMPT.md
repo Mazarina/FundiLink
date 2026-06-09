@@ -1,245 +1,205 @@
-# NEXT_PROMPT.md — Phase 1: Solution Scaffold
+# NEXT_PROMPT.md — Phase 2: Student Profile, Academic Record, and APS Calculator
 
 ## When to Run This Prompt
-Run this prompt after Phase 0 documentation is complete and committed.
-This prompt creates the working application scaffold that all future phases will build on.
+Run this after Phase 1 scaffold is committed and the solution builds cleanly with tests passing.
+This prompt implements the core learner registration, profile, and APS calculation flow.
 
 ---
 
-## Prompt 001 — Solution Scaffold and Local Development Setup
+## Prompt 002 — Student Profile, Academic Record, and APS Calculator
 
 ---
 
-Read `CLAUDE.md` before starting. Follow all rules in that file.
+Read `CLAUDE.md`, `PRODUCT_REQUIREMENTS.md`, and `ARCHITECTURE.md` before starting.
+Follow all rules in `CLAUDE.md` — especially: no secrets committed, POPIA consent required, RBAC enforced.
 
-You are Claude Code working on FundiLink by ZulTek. Phase 0 documentation is complete. You are now starting Phase 1: creating the solution scaffold and local development setup.
+You are working on FundiLink by ZulTek. Phase 1 scaffold is complete. You are now building Phase 2: the core learner registration, profile creation, academic record entry, and APS calculation.
 
-**Goal:** Create the full working solution structure. No business logic yet — just the scaffold, configuration, and a running foundation.
-
-**Context:**
-- Product: FundiLink SmartApply (see `PRODUCT_REQUIREMENTS.md`)
-- Architecture: Clean Architecture ASP.NET Core + React + Vite + TypeScript (see `ARCHITECTURE.md`)
-- Database: PostgreSQL (see `docs/14-database-design.md`)
-- No secrets should ever be committed
+**Stack:** ASP.NET Core 8, Clean Architecture, PostgreSQL + EF Core, React + Vite + TypeScript, Tailwind CSS, JWT authentication.
 
 ---
 
-## What to Create
+## Backend: What to Build
 
-### 1. .NET Solution and Projects
+### 1. Domain Entities
 
-Create the following solution structure:
+In `FundiLink.Domain`:
 
-```
-src/
-├── FundiLink.Domain/           (Class Library)
-├── FundiLink.Application/      (Class Library)
-├── FundiLink.Infrastructure/   (Class Library)
-└── FundiLink.Api/              (ASP.NET Core Web API)
+Create the following entities (all extending `BaseEntity`):
 
-tests/
-├── FundiLink.Domain.Tests/     (xUnit)
-├── FundiLink.Application.Tests/(xUnit)
-└── FundiLink.Api.Tests/        (xUnit + WebApplicationFactory)
-```
+**Learner**
+- Fields: UserId (string), FirstName, Surname, DateOfBirth, IdNumber (nullable), PassportNumber (nullable), Gender (nullable), HomeLanguage (nullable), Nationality, MobileNumber, Province, Municipality, Suburb, SchoolName, SchoolProvince, GradeLevel (enum: Grade11/Grade12/PostMatric), GuardianName (nullable), GuardianPhone (nullable), GuardianEmail (nullable), ConsentAccepted (bool), ConsentTimestamp, ConsentVersion, GuardianConsentAccepted (bool, nullable), GuardianConsentTimestamp (nullable), ProfileCompleteness (int 0–100)
 
-Create a `FundiLink.sln` file at the root with all projects referenced.
+**AcademicProfile**
+- Fields: LearnerId, Year (int), ResultType (enum: Grade11Prelim/Grade12Final/Grade12Prelim), ApsScore (int), ApsCalculatedAt (nullable)
+- Navigation: ICollection<NscSubjectResult> Subjects
 
-**Project dependencies (Clean Architecture):**
-- Domain: no dependencies on other FundiLink projects
-- Application: depends on Domain only
-- Infrastructure: depends on Application and Domain
-- Api: depends on Application and Infrastructure
+**NscSubjectResult**
+- Fields: AcademicProfileId, SubjectName, SubjectCode (nullable), Percentage (int 0–100), ApsPoints (int), IsHomeLanguage (bool), IsLifeOrientation (bool)
 
-**Packages to install:**
-- FundiLink.Domain: none (pure .NET)
-- FundiLink.Application: MediatR, FluentValidation, FluentValidation.DependencyInjectionExtensions
-- FundiLink.Infrastructure: Microsoft.EntityFrameworkCore, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.AspNetCore.Identity.EntityFrameworkCore, Microsoft.EntityFrameworkCore.Tools
-- FundiLink.Api: Microsoft.AspNetCore.Authentication.JwtBearer, Swashbuckle.AspNetCore, Microsoft.EntityFrameworkCore.Design
-- Test projects: xUnit, FluentAssertions, Moq, coverlet.collector, Microsoft.AspNetCore.Mvc.Testing (for Api tests)
+### 2. APS Calculator
 
-### 2. ASP.NET Core API Configuration
+In `FundiLink.Application/Features/AcademicProfile`:
 
-In `FundiLink.Api`:
-- Configure ASP.NET Identity
-- Configure JWT Bearer authentication
-- Configure Swagger / OpenAPI (dev environment only)
-- Add CORS policy (allow localhost frontend in dev)
-- Add health check endpoint: `GET /health`
-- Add global exception handling middleware
-- Configure EF Core with PostgreSQL connection string from environment/user-secrets (placeholder only — no real connection string committed)
-- Add request logging middleware
+Create an `ApsCalculatorService` with:
+- Method: `CalculateAps(IEnumerable<NscSubjectResult> subjects) -> int`
+- Standard NSC scale: 80–100=7, 70–79=6, 60–69=5, 50–59=4, 40–49=3, 30–39=2, 0–29=1
+- Life Orientation excluded from APS total
+- Returns total APS from best 6 subjects (excluding LO)
 
-`appsettings.json` should contain only placeholder values:
-```json
-{
-  "ConnectionStrings": {
-    "Default": "SET_VIA_USER_SECRETS_OR_ENV"
-  },
-  "JwtSettings": {
-    "SecretKey": "SET_VIA_USER_SECRETS_OR_ENV",
-    "Issuer": "FundiLink",
-    "Audience": "FundiLink",
-    "ExpiryMinutes": 60
-  }
-}
-```
+Write comprehensive unit tests for the APS calculator in `FundiLink.Application.Tests` — test edge cases, LO exclusion, boundary values.
 
-### 3. EF Core Setup
+### 3. Application Use Cases (CQRS via MediatR)
 
-In `FundiLink.Infrastructure`:
-- Create `FundiLinkDbContext` extending `IdentityDbContext`
-- Configure it with the connection string from app settings
-- Create the initial migration (this will be the identity schema migration)
-- Do not run the migration yet — just create it
+Create the following commands and queries:
 
-### 4. React + Vite + TypeScript Frontend
+**Auth:**
+- `RegisterLearnerCommand` — create Identity user + Learner record, send verification email (stub the email for now), enforce POPIA consent
+- `LoginCommand` — return access token + refresh token
+- `RefreshTokenCommand`
 
-Create `fundilink-web/` inside `src/`:
+**Learner Profile:**
+- `GetMyProfileQuery`
+- `UpdatePersonalInfoCommand`
 
-```
-src/fundilink-web/
-├── src/
-│   ├── api/
-│   ├── components/
-│   ├── features/
-│   │   └── auth/
-│   ├── hooks/
-│   ├── layouts/
-│   ├── pages/
-│   │   ├── HomePage.tsx
-│   │   └── NotFoundPage.tsx
-│   ├── types/
-│   ├── utils/
-│   ├── App.tsx
-│   └── main.tsx
-├── public/
-├── index.html
-├── vite.config.ts
-├── tailwind.config.ts
-├── tsconfig.json
-├── tsconfig.node.json
-└── package.json
-```
+**Academic Profile:**
+- `GetAcademicProfileQuery` — returns profile + subjects + APS
+- `SaveAcademicProfileCommand` — upsert subjects, recalculate APS, persist
 
-Install these packages:
-- react, react-dom
-- react-router-dom
-- axios
-- tailwindcss, @tailwindcss/forms, autoprefixer, postcss
-- @types/react, @types/react-dom (devDependencies)
-- typescript (devDependencies)
-- vite, @vitejs/plugin-react (devDependencies)
-- vitest, @testing-library/react, @testing-library/jest-dom (devDependencies)
+### 4. API Controllers
 
-Configure:
-- TypeScript strict mode
-- Tailwind CSS with PostCSS
-- Vite with React plugin
-- React Router with a basic route: `/` → `HomePage`
+Create controllers in `FundiLink.Api/Controllers`:
 
-`HomePage.tsx` should render: "FundiLink — Coming Soon" (placeholder only).
+- `AuthController` — POST /api/v1/auth/register, /login, /refresh
+- `LearnersController` — GET/PUT /api/v1/learners/me
+- `AcademicProfileController` — GET/PUT /api/v1/learners/me/academic-profile, GET /api/v1/learners/me/aps
 
-### 5. Docker Compose for Local PostgreSQL
+**Security rules:**
+- `[Authorize]` on all endpoints except register and login
+- Learners can only access their own profile — validate ownership in handlers
+- Register requires: consentAccepted = true in the request body
 
-Create `docker/docker-compose.yml`:
+### 5. EF Core
 
-```yaml
-version: '3.9'
-services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: fundilink-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: fundilink_dev
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - fundilink-pgdata:/var/lib/postgresql/data
+Add the new entities to `FundiLinkDbContext`.
+Generate a new migration: `AddLearnerAndAcademicProfile`.
+Do NOT run the migration against a real database — just generate it.
 
-volumes:
-  fundilink-pgdata:
-```
+### 6. POPIA
 
-Create a `docker/.env.example` file showing the required variables (with placeholder values — no real passwords):
-```
-POSTGRES_USER=fundilink_local
-POSTGRES_PASSWORD=REPLACE_WITH_YOUR_LOCAL_PASSWORD
-```
-
-The actual `docker/.env` file must be in `.gitignore` and must NOT be committed.
-
-### 6. GitHub Actions CI Pipeline
-
-Create `.github/workflows/ci.yml`:
-- Trigger on push and pull_request to `main` and `develop`
-- Job 1: Build and test .NET solution (`dotnet build`, `dotnet test`)
-- Job 2: Build and lint frontend (`npm install`, `npm run build`, `npm run lint` if lint script exists)
-- Use GitHub Actions secrets for any required environment values — do not hardcode them
-
-### 7. Update README.md
-
-Update `README.md` with working local setup instructions:
-- Prerequisites
-- How to start Docker PostgreSQL
-- How to set up dotnet user-secrets (with example key names, no real values)
-- How to run the API (`dotnet run`)
-- How to run the frontend (`npm run dev`)
-- How to run tests
+Registration must:
+- Require `consentAccepted = true` in the request (reject with 400 if false)
+- Record `ConsentTimestamp = DateTime.UtcNow`
+- Record `ConsentVersion = "1.0"` (constant for now)
+- If DOB indicates under-18, set a flag and require guardian info
 
 ---
 
-## What NOT to Do
+## Frontend: What to Build
 
-- Do not create any learner profile, APS, or programme features (Phase 2)
-- Do not create any domain entities beyond the initial scaffolding
-- Do not implement any business logic
-- Do not commit any real secrets, connection strings, or passwords
-- Do not add packages beyond what is listed above without noting it
-- Do not run database migrations against a real database — only generate the migration file
+### 1. Auth Feature (`/src/features/auth`)
+
+Create:
+- `RegisterPage.tsx` — form: firstName, surname, email, password, dateOfBirth, consentAccepted checkbox
+- `LoginPage.tsx` — form: email, password
+- `authApi.ts` — typed API calls for register, login, refresh
+- `AuthContext.tsx` or Zustand auth store — store access token, user info, isAuthenticated
+- Protected route component — redirect to /login if not authenticated
+
+### 2. Profile Feature (`/src/features/profile`)
+
+Create:
+- `ProfilePage.tsx` — display learner info, completeness indicator
+- `EditProfilePage.tsx` — form to edit personal info
+
+### 3. APS Feature (`/src/features/aps`)
+
+Create:
+- `AcademicProfilePage.tsx` — enter NSC subjects and marks
+- `ApsScoreDisplay.tsx` — show APS score prominently with a breakdown table
+- `SubjectSelector.tsx` — dropdown of approved NSC subjects (hardcode the list)
+- `academicApi.ts` — typed API calls
+
+### 4. Routing
+
+Update `App.tsx` with routes:
+- `/` → `HomePage`
+- `/register` → `RegisterPage`
+- `/login` → `LoginPage`
+- `/profile` → `ProfilePage` (protected)
+- `/profile/edit` → `EditProfilePage` (protected)
+- `/academic` → `AcademicProfilePage` (protected)
+- `*` → `NotFoundPage`
+
+### 5. POPIA Consent UI
+
+On the register page:
+- Display a clear, plain-language consent notice above the checkbox
+- Checkbox label: "I agree to FundiLink's Privacy Policy and consent to my information being processed as described above."
+- The checkbox must be checked to submit
+- Include a note: "FundiLink is not an official admissions portal. It helps you prepare and track your applications."
+
+---
+
+## Testing Requirements
+
+**Backend:**
+- Unit tests for `ApsCalculatorService` — minimum 10 test cases including LO exclusion, boundary values, all-low scores, all-high scores
+- Unit tests for `RegisterLearnerCommand` handler (mock dependencies)
+- Integration tests for auth endpoints (register → login → get profile flow)
+
+**Frontend:**
+- Unit tests for `ApsScoreDisplay` component — verify it renders the correct APS score
+- Unit tests for APS calculation utility if extracted to the frontend
 
 ---
 
 ## Security Requirements
 
-- `appsettings.json` must contain only placeholders
-- `.env` files must not be committed
-- `docker/.env` must be in `.gitignore`
-- No real connection strings anywhere in committed files
-- JWT secret key must be set via user-secrets or environment variable
-- Note in README: "Never commit real secrets"
+- No secrets committed
+- Passwords never logged or returned in responses
+- ID numbers never returned in API responses in plaintext — mask if needed
+- JWT tokens validated on all protected endpoints
+- Ownership validation: a learner can only GET/PUT their own profile
+
+---
+
+## What NOT to Do
+
+- Do not implement programme matching (Phase 3)
+- Do not implement document upload (Phase 3)
+- Do not implement admin portal (Phase 4)
+- Do not send real emails — stub the email service
+- Do not run database migrations against a production database
+- Do not commit secrets
 
 ---
 
 ## Output Requirements
 
-After completing this prompt:
-
-1. Confirm the solution builds: `dotnet build` passes
-2. Confirm frontend builds: `npm run build` passes
-3. Confirm tests run: `dotnet test` passes (even with zero tests initially)
-4. List every file and folder created or modified
-5. Show the final directory structure
-6. Confirm no secrets are committed
-7. Commit all changes with message: `Add Phase 1 solution scaffold and local dev setup`
-8. Push to `claude/happy-dirac-n7qgtg`
-9. Update `ROADMAP.md` Phase 1 checklist items as appropriate
-10. Update `prompts/NEXT_PROMPT.md` with the Phase 2 prompt
+1. Confirm `dotnet build` passes
+2. Confirm `dotnet test` passes (including APS unit tests)
+3. Confirm `npm run build` passes in `src/fundilink-web`
+4. List all files created or modified
+5. Confirm no secrets committed
+6. Commit with message: `Add Phase 2 learner profile, academic record, and APS calculator`
+7. Push to `claude/happy-dirac-n7qgtg`
+8. Update `ROADMAP.md` Phase 2 checklist
+9. Update this file (`NEXT_PROMPT.md`) with the Phase 3 prompt
 
 ---
 
-## Definition of Done for Phase 1
+## Definition of Done for Phase 2
 
-- [ ] .NET solution with 4 projects builds cleanly
-- [ ] 3 test projects exist and `dotnet test` passes
-- [ ] React + Vite + TypeScript frontend builds cleanly
-- [ ] Docker Compose file created for local PostgreSQL
-- [ ] EF Core initial migration generated
-- [ ] Health check endpoint responds at `/health`
-- [ ] Swagger available in dev at `/swagger`
-- [ ] GitHub Actions CI workflow created
-- [ ] README updated with local setup instructions
+- [ ] Learner can register with POPIA consent
+- [ ] Learner can log in and receive JWT token
+- [ ] Learner can create and edit their profile
+- [ ] Learner can enter NSC results
+- [ ] APS score is calculated correctly (validated by unit tests)
+- [ ] Academic profile API returns APS score with breakdown
+- [ ] Frontend shows registration, login, profile, and APS pages
+- [ ] All RBAC rules enforced (own data only)
+- [ ] Minimum 10 APS unit tests pass
+- [ ] Integration tests for auth flow pass
 - [ ] Zero secrets committed
-- [ ] All files committed and pushed to branch
+- [ ] Build and tests green

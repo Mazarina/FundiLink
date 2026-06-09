@@ -87,13 +87,69 @@ The MVP focuses on the core student application workflow:
 
 ## Local Setup
 
-> **Note:** Application code has not been scaffolded yet. Setup instructions will be added in the next phase.
+### Prerequisites
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8)
+- [Node.js 20+](https://nodejs.org/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for local PostgreSQL)
+- A PostgreSQL client (optional — e.g., pgAdmin, DBeaver)
 
-Prerequisites (for future setup):
-- .NET 8 SDK or later
-- Node.js 20+
-- Docker Desktop (for local PostgreSQL)
-- A PostgreSQL client (e.g., pgAdmin, DBeaver)
+### 1. Start Local PostgreSQL
+
+```bash
+cp docker/.env.example docker/.env
+# Edit docker/.env and set a local password (never commit this file)
+docker compose -f docker/docker-compose.yml --env-file docker/.env up -d
+```
+
+### 2. Configure .NET User Secrets (never commit real values)
+
+```bash
+cd src/FundiLink.Api
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Database=fundilink_dev;Username=fundilink_local;Password=YOUR_LOCAL_PASSWORD"
+dotnet user-secrets set "JwtSettings:SecretKey" "YOUR_LOCAL_JWT_SECRET_MIN_32_CHARS"
+```
+
+### 3. Apply Database Migrations
+
+```bash
+# From the repo root
+export DOTNET_ROOT=/usr/local/dotnet  # adjust to your .NET install path
+dotnet ef database update \
+  --project src/FundiLink.Infrastructure \
+  --startup-project src/FundiLink.Api
+```
+
+### 4. Run the API
+
+```bash
+cd src/FundiLink.Api
+dotnet run
+# API available at http://localhost:5000
+# Swagger at http://localhost:5000/swagger
+# Health check at http://localhost:5000/health
+```
+
+### 5. Run the Frontend
+
+```bash
+cd src/fundilink-web
+npm install
+npm run dev
+# Frontend at http://localhost:5173
+```
+
+### 6. Run Tests
+
+```bash
+# Backend tests
+dotnet test
+
+# Frontend tests
+cd src/fundilink-web && npm test
+```
+
+> **Security reminder:** Never commit `docker/.env`, user secrets, real connection strings, or JWT keys.
 
 ---
 

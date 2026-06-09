@@ -26,24 +26,24 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 ---
 
 ## Phase 1: Solution Scaffold and Local Development Setup
-**Status:** Planned
+**Status:** Complete
 **Goal:** Create the working solution structure that future phases will build on.
 
 ### Deliverables
-- [ ] ASP.NET Core solution with Clean Architecture projects
+- [x] ASP.NET Core solution with Clean Architecture projects
   - FundiLink.Domain
   - FundiLink.Application
   - FundiLink.Infrastructure
   - FundiLink.Api
-- [ ] React + Vite + TypeScript frontend scaffold
-- [ ] PostgreSQL Docker Compose for local development
-- [ ] EF Core setup with initial migration
-- [ ] ASP.NET Identity configured
-- [ ] JWT authentication baseline
-- [ ] Basic health check endpoint
-- [ ] Swagger / OpenAPI configured
-- [ ] GitHub Actions CI pipeline (build + test)
-- [ ] Local setup documentation in README
+- [x] React + Vite + TypeScript frontend scaffold
+- [x] PostgreSQL Docker Compose for local development
+- [x] EF Core setup with initial migration (InitialIdentitySchema)
+- [x] ASP.NET Identity configured
+- [x] JWT authentication baseline
+- [x] Basic health check endpoint (`/health`)
+- [x] Swagger / OpenAPI configured
+- [x] GitHub Actions CI pipeline (build + test)
+- [x] Local setup documentation in README
 
 ---
 

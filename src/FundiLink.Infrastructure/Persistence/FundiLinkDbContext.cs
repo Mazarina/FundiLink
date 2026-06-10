@@ -25,6 +25,10 @@ public class FundiLinkDbContext : IdentityDbContext, IApplicationDbContext
     public DbSet<Bursary> Bursaries => Set<Bursary>();
     public DbSet<BursaryApplication> BursaryApplications => Set<BursaryApplication>();
     public DbSet<AssistantInteractionLog> AssistantInteractionLogs => Set<AssistantInteractionLog>();
+    public DbSet<AccommodationListing> AccommodationListings => Set<AccommodationListing>();
+    public DbSet<AccommodationInterest> AccommodationInterests => Set<AccommodationInterest>();
+    public DbSet<CareerOpportunity> CareerOpportunities => Set<CareerOpportunity>();
+    public DbSet<CareerInterest> CareerInterests => Set<CareerInterest>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

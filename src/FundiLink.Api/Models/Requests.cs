@@ -79,3 +79,8 @@ public record UpdateBursaryRequest(
     bool IsActive);
 
 public record AskAssistantRequest(AssistantIntent Intent);
+
+public record TrackAccommodationInterestRequest(Guid AccommodationListingId, OpportunityInterestStatus Status, string? Notes);
+public record UpdateAccommodationInterestStatusRequest(OpportunityInterestStatus NewStatus, string? Notes);
+public record TrackCareerInterestRequest(Guid CareerOpportunityId, OpportunityInterestStatus Status, string? Notes);
+public record UpdateCareerInterestStatusRequest(OpportunityInterestStatus NewStatus, string? Notes);

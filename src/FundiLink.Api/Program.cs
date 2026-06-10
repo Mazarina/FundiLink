@@ -117,6 +117,10 @@ await FundiLink.Infrastructure.Persistence.Seed.ProgrammeSeedData.SeedAsync(app.
 // Seed curated public bursary examples for guidance only (runs once, when no bursaries exist)
 await FundiLink.Infrastructure.Persistence.Seed.BursarySeedData.SeedAsync(app.Services);
 
+// Seed curated accommodation & early-career examples for guidance only (runs once, when empty)
+await FundiLink.Infrastructure.Persistence.Seed.AccommodationSeedData.SeedAsync(app.Services);
+await FundiLink.Infrastructure.Persistence.Seed.CareerSeedData.SeedAsync(app.Services);
+
 app.Run();
 
 // Required for WebApplicationFactory in integration tests

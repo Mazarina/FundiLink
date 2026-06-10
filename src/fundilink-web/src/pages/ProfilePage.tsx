@@ -104,6 +104,18 @@ export default function ProfilePage() {
             <div className="font-semibold text-gray-800 text-sm">Bursary Hub</div>
             <div className="text-xs text-gray-500 mt-1">Find funding you may qualify for</div>
           </Link>
+          <Link to="/accommodation"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">🏠</div>
+            <div className="font-semibold text-gray-800 text-sm">Accommodation</div>
+            <div className="text-xs text-gray-500 mt-1">Find places to stay near campus</div>
+          </Link>
+          <Link to="/career"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">💼</div>
+            <div className="font-semibold text-gray-800 text-sm">Career Opportunities</div>
+            <div className="text-xs text-gray-500 mt-1">Learnerships, internships & jobs</div>
+          </Link>
           <Link to="/assistant"
             className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
             <div className="text-3xl mb-2">💬</div>

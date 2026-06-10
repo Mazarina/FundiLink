@@ -252,6 +252,88 @@ Ask the AI guidance assistant a constrained, profile-aware question.
 
 ---
 
+## Accommodation Endpoints
+
+All accommodation data is curated public/example information for guidance only. FundiLink is NOT an
+accommodation provider, landlord, or booking agent. No bookings or payments occur. Every response
+carries a guidance-only disclaimer.
+
+### GET /api/v1/accommodation
+Browse/filter accommodation listings.
+- Auth: Student (any authenticated user)
+- Query: `province?`, `nearInstitution?`, `accommodationType?` (`ResidenceOnCampus` | `PrivateStudentResidence` | `SharedHouse` | `Room` | `Other`)
+- Response: `AccommodationListingDto[]`
+
+### GET /api/v1/accommodation/matches
+"May suit you" listings grounded in the learner's province/institution (guidance-only).
+- Auth: Student (owner-scoped — uses only the caller's own profile)
+- Response: `AccommodationMatchDto[]` (each with `reasons[]`, `guidanceOnly: true`, `disclaimer`)
+
+### GET /api/v1/accommodation/interests
+List the caller's tracked accommodation interests.
+- Auth: Student (owner-scoped)
+- Response: `AccommodationInterestSummaryDto[]`
+
+### GET /api/v1/accommodation/{id}
+Get a single accommodation listing.
+- Auth: Student
+- Returns `404 Not Found` if missing.
+
+### POST /api/v1/accommodation/interests
+Track interest in a listing.
+- Auth: Student (owner-scoped)
+- Request body: `{ "accommodationListingId": "guid", "status": "Saved" | "Contacted" | "Applied" | "NotInterested", "notes?": "..." }`
+- Response: `201 Created` with `{ id }`
+
+### PUT /api/v1/accommodation/interests/{id}/status
+Update the status of a tracked interest.
+- Auth: Student (owner-scoped — only the owner may update)
+- Request body: `{ "newStatus": "Saved" | "Contacted" | "Applied" | "NotInterested", "notes?": "..." }`
+- Response: `204 No Content`
+
+---
+
+## Career Endpoints
+
+All career opportunity data is curated public/example information for guidance only. FundiLink is NOT
+an employer or recruitment agency and does not guarantee placement. Applications happen on the
+provider's official channel. Every response carries a guidance-only disclaimer.
+
+### GET /api/v1/career
+Browse/filter early-career opportunities.
+- Auth: Student (any authenticated user)
+- Query: `fieldOfInterest?`, `province?`, `opportunityType?` (`Learnership` | `Internship` | `SkillsProgramme` | `Apprenticeship` | `EntryLevelJob`)
+- Response: `CareerOpportunityDto[]`
+
+### GET /api/v1/career/matches
+Opportunities matched on the learner's grade level / field (guidance-only).
+- Auth: Student (owner-scoped — uses only the caller's own profile)
+- Response: `CareerMatchDto[]` (each with `reasons[]`, `guidanceOnly: true`, `disclaimer`)
+
+### GET /api/v1/career/interests
+List the caller's tracked career interests.
+- Auth: Student (owner-scoped)
+- Response: `CareerInterestSummaryDto[]`
+
+### GET /api/v1/career/{id}
+Get a single career opportunity.
+- Auth: Student
+- Returns `404 Not Found` if missing.
+
+### POST /api/v1/career/interests
+Track interest in an opportunity.
+- Auth: Student (owner-scoped)
+- Request body: `{ "careerOpportunityId": "guid", "status": "Saved" | "Contacted" | "Applied" | "NotInterested", "notes?": "..." }`
+- Response: `201 Created` with `{ id }`
+
+### PUT /api/v1/career/interests/{id}/status
+Update the status of a tracked interest.
+- Auth: Student (owner-scoped — only the owner may update)
+- Request body: `{ "newStatus": "Saved" | "Contacted" | "Applied" | "NotInterested", "notes?": "..." }`
+- Response: `204 No Content`
+
+---
+
 ## Admin Endpoints
 
 ### GET /api/v1/admin/learners

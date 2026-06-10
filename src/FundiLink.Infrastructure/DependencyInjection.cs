@@ -63,6 +63,14 @@ public static class DependencyInjection
         services.AddScoped<IAiAssistantService, RuleBasedAiAssistantService>();
         services.AddScoped<IAssistantInteractionLogRepository, AssistantInteractionLogRepository>();
 
+        // Accommodation & early-career opportunities (Phase 8). Curated, seeded data behind
+        // repositories — no real external listing/job-board provider integration in this phase.
+        // A real provider may be wired later behind the same interface (key via env only).
+        services.AddScoped<IAccommodationRepository, AccommodationRepository>();
+        services.AddScoped<IAccommodationInterestRepository, AccommodationInterestRepository>();
+        services.AddScoped<ICareerRepository, CareerRepository>();
+        services.AddScoped<ICareerInterestRepository, CareerInterestRepository>();
+
         return services;
     }
 }

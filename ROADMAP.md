@@ -163,6 +163,29 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
+## Phase 8: Accommodation & Early-Career Opportunities (MVP delivered)
+**Status:** MVP delivered
+**Goal:** Connect learners with student accommodation and early-career opportunities.
+
+### Deliverables
+- [x] Student accommodation listings (curated public information, guidance-only, disclaimed) — browse/filter by province, near-institution, and accommodation type
+- [x] Accommodation "may suit you" matching grounded in the learner's province/institution (guidance-only)
+- [x] Owner-scoped accommodation interest tracking (track / list / update status)
+- [x] Early-career opportunities (learnerships, internships, skills programmes, apprenticeships, entry-level jobs) — browse/filter by field, province, and opportunity type
+- [x] Career eligibility hints from the learner's grade level / field (guidance-only)
+- [x] Owner-scoped career interest tracking (track / list / update status)
+- [x] Curated/seeded data behind repositories; no fabricated provider/employer facts; deterministic stub behind interfaces
+- [x] `AccommodationController` and `CareerController` under `api/v1/...`, `[Authorize]`, owner-scoped, input validation at boundary
+- [x] Frontend: accommodation & career browse pages, "my saved"/"my tracked" pages, guidance-only disclaimer banners, profile tiles, ProtectedRoute wiring
+- [x] Backend unit tests (filtering, profile-grounded matches, owner-scope, interest tracking) and frontend page tests
+
+### Deferred (post-MVP)
+- [ ] Real external listing/job-board provider integration (behind existing interfaces; API key via environment only) (deferred)
+- [ ] Bookings and payments for accommodation (deferred — no third-party integrations this phase)
+- [ ] In-app application submission for career opportunities (applications happen on the provider's official channel) (deferred)
+
+---
+
 ## Notes
 
 - Phases may overlap or be reprioritised based on learner feedback and business needs

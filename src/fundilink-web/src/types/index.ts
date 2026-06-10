@@ -198,6 +198,88 @@ export interface BursaryApplication {
   disclaimer: string
 }
 
+export type AccommodationType = 'ResidenceOnCampus' | 'PrivateStudentResidence' | 'SharedHouse' | 'Room' | 'Other'
+export type CareerOpportunityType = 'Learnership' | 'Internship' | 'SkillsProgramme' | 'Apprenticeship' | 'EntryLevelJob'
+export type OpportunityInterestStatus = 'Saved' | 'Contacted' | 'Applied' | 'NotInterested'
+
+export interface AccommodationListing {
+  id: string
+  name: string
+  providerName: string
+  description: string
+  accommodationType: AccommodationType
+  province: string
+  city: string
+  nearInstitution?: string
+  indicativeMonthlyCost?: number
+  contactUrl?: string
+  disclaimer: string
+}
+
+export interface AccommodationMatch {
+  id: string
+  name: string
+  providerName: string
+  accommodationType: AccommodationType
+  province: string
+  city: string
+  nearInstitution?: string
+  indicativeMonthlyCost?: number
+  contactUrl?: string
+  reasons: string[]
+  guidanceOnly: boolean
+  disclaimer: string
+}
+
+export interface AccommodationInterest {
+  id: string
+  accommodationListingId: string
+  listingName: string
+  providerName: string
+  status: OpportunityInterestStatus
+  notes?: string
+  contactUrl?: string
+  disclaimer: string
+}
+
+export interface CareerOpportunity {
+  id: string
+  title: string
+  providerName: string
+  description: string
+  opportunityType: CareerOpportunityType
+  fieldsOfInterest: string[]
+  minimumGradeLevel?: GradeLevel
+  provincesEligible: string[]
+  applicationCloseDate?: string
+  externalApplicationUrl?: string
+  disclaimer: string
+}
+
+export interface CareerMatch {
+  id: string
+  title: string
+  providerName: string
+  opportunityType: CareerOpportunityType
+  minimumGradeLevel?: GradeLevel
+  applicationCloseDate?: string
+  externalApplicationUrl?: string
+  reasons: string[]
+  guidanceOnly: boolean
+  disclaimer: string
+}
+
+export interface CareerInterest {
+  id: string
+  careerOpportunityId: string
+  opportunityTitle: string
+  providerName: string
+  status: OpportunityInterestStatus
+  notes?: string
+  externalApplicationUrl?: string
+  disclaimer: string
+}
+
 export type AssistantIntent =
   | 'WhatDoIQualifyFor'
   | 'WhatIsMyAps'

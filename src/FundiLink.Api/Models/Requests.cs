@@ -47,3 +47,5 @@ public record UpdateInstitutionRequest(string Name, InstitutionType InstitutionT
 public record CreateProgrammeRequest(Guid InstitutionId, string Name, string? FacultyOrSchool, int? NfqLevel, int MinimumAps, List<RequiredSubjectRequest> RequiredSubjects, DateTime? ApplicationOpenDate, DateTime? ApplicationCloseDate);
 public record UpdateProgrammeRequest(string Name, string? FacultyOrSchool, int? NfqLevel, int MinimumAps, List<RequiredSubjectRequest> RequiredSubjects, DateTime? ApplicationOpenDate, DateTime? ApplicationCloseDate, bool IsActive);
 public record RequiredSubjectRequest(string SubjectName, int MinimumPercentage);
+
+public record UpdateNotificationPreferencesRequest(bool EmailEnabled, bool WhatsAppEnabled, bool SmsEnabled);

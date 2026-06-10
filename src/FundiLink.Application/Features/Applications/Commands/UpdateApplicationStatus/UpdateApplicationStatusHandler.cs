@@ -1,4 +1,5 @@
 using FundiLink.Application.Common.Interfaces;
+using FundiLink.Domain.Enums;
 using MediatR;
 
 namespace FundiLink.Application.Features.Applications.Commands.UpdateApplicationStatus;
@@ -7,13 +8,16 @@ public class UpdateApplicationStatusHandler : IRequestHandler<UpdateApplicationS
 {
     private readonly ILearnerRepository _learnerRepository;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly INotificationService _notificationService;
 
     public UpdateApplicationStatusHandler(
         ILearnerRepository learnerRepository,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        INotificationService notificationService)
     {
         _learnerRepository = learnerRepository;
         _applicationRepository = applicationRepository;
+        _notificationService = notificationService;
     }
 
     public async Task Handle(UpdateApplicationStatusCommand request, CancellationToken cancellationToken)
@@ -29,5 +33,12 @@ public class UpdateApplicationStatusHandler : IRequestHandler<UpdateApplicationS
 
         application.UpdateStatus(request.NewStatus, request.Notes);
         await _applicationRepository.SaveChangesAsync(cancellationToken);
+
+        await _notificationService.NotifyAsync(
+            learner.Id,
+            NotificationType.ApplicationStatusChange,
+            "Application status updated",
+            $"Your application status changed to {request.NewStatus}.",
+            cancellationToken);
     }
 }

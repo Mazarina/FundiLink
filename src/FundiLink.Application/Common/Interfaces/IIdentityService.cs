@@ -7,4 +7,5 @@ public interface IIdentityService
     Task<string> GenerateEmailConfirmationTokenAsync(string userId);
     Task<(bool Succeeded, bool IsLockedOut)> CheckPasswordAsync(string email, string password);
     Task<(string UserId, string Email, IEnumerable<string> Roles)?> GetUserByEmailAsync(string email);
+    Task<(string UserId, string Email)?> GetUserByIdAsync(string userId);
 }

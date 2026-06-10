@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FundiLink.Application\FundiLink.Application.csproj" />
+    <ProjectReference Include="..\..\src\FundiLink.Infrastructure\FundiLink.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

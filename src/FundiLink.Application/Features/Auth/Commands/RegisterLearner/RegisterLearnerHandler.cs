@@ -1,5 +1,6 @@
 using FundiLink.Application.Common.Interfaces;
 using FundiLink.Domain.Entities;
+using FundiLink.Domain.Enums;
 using MediatR;
 
 namespace FundiLink.Application.Features.Auth.Commands.RegisterLearner;
@@ -10,17 +11,20 @@ public class RegisterLearnerHandler : IRequestHandler<RegisterLearnerCommand, Re
     private readonly ILearnerRepository _learnerRepository;
     private readonly IApplicationDbContext _dbContext;
     private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
 
     public RegisterLearnerHandler(
         IIdentityService identityService,
         ILearnerRepository learnerRepository,
         IApplicationDbContext dbContext,
-        IEmailService emailService)
+        IEmailService emailService,
+        INotificationService notificationService)
     {
         _identityService = identityService;
         _learnerRepository = learnerRepository;
         _dbContext = dbContext;
         _emailService = emailService;
+        _notificationService = notificationService;
     }
 
     public async Task<RegisterLearnerResult> Handle(RegisterLearnerCommand request, CancellationToken cancellationToken)
@@ -55,6 +59,13 @@ public class RegisterLearnerHandler : IRequestHandler<RegisterLearnerCommand, Re
         await _emailService.SendEmailVerificationAsync(
             request.Email,
             $"/verify?token={Uri.EscapeDataString(token)}&userId={userId}",
+            cancellationToken);
+
+        await _notificationService.NotifyAsync(
+            learner.Id,
+            NotificationType.RegistrationWelcome,
+            "Welcome to FundiLink",
+            "Welcome to FundiLink! Your profile is ready. Complete it to discover programmes and opportunities you qualify for.",
             cancellationToken);
 
         return new RegisterLearnerResult(userId, "Registration successful. Please verify your email.");

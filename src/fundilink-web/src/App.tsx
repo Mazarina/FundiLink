@@ -16,6 +16,7 @@ import ApplicationDetailPage from './pages/ApplicationDetailPage'
 import DocumentsPage from './pages/DocumentsPage'
 import AdminLearnersPage from './pages/AdminLearnersPage'
 import AdminLearnerDetailPage from './pages/AdminLearnerDetailPage'
+import NotificationPreferencesPage from './pages/NotificationPreferencesPage'
 import AuditLogPage from './pages/AuditLogPage'
 
 const ADMIN_ROLES = ['Admin', 'SupportAgent', 'SuperAdmin']
@@ -37,6 +38,7 @@ function App() {
           <Route path="/applications" element={<ProtectedRoute><ApplicationsPage /></ProtectedRoute>} />
           <Route path="/applications/:id" element={<ProtectedRoute><ApplicationDetailPage /></ProtectedRoute>} />
           <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+          <Route path="/notifications/preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
           <Route path="/admin/learners" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnersPage /></ProtectedRoute>} />
           <Route path="/admin/learners/:id" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnerDetailPage /></ProtectedRoute>} />
           <Route path="/admin/audit" element={<ProtectedRoute roles={['SuperAdmin']}><AuditLogPage /></ProtectedRoute>} />

@@ -18,4 +18,10 @@ public class StubEmailService : IEmailService
         _logger.LogInformation("[STUB EMAIL] Verification email to {Email}: {Link}", email, verificationLink);
         return Task.CompletedTask;
     }
+
+    public Task SendNotificationEmailAsync(string toEmail, string subject, string body, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("[STUB EMAIL] Notification to {Email} - {Subject}: {Body}", toEmail, subject, body);
+        return Task.CompletedTask;
+    }
 }

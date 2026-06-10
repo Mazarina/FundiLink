@@ -20,6 +20,8 @@ public class FundiLinkDbContext : IdentityDbContext, IApplicationDbContext
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<DocumentChecklistItem> DocumentChecklistItems => Set<DocumentChecklistItem>();
     public DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
+    public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
+    public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

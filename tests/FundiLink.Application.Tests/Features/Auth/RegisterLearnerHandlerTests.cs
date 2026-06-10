@@ -13,6 +13,7 @@ public class RegisterLearnerHandlerTests
     private readonly Mock<ILearnerRepository> _learnerRepository = new();
     private readonly Mock<IApplicationDbContext> _dbContext = new();
     private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<INotificationService> _notificationService = new();
     private readonly RegisterLearnerHandler _sut;
 
     public RegisterLearnerHandlerTests()
@@ -21,7 +22,8 @@ public class RegisterLearnerHandlerTests
             _identityService.Object,
             _learnerRepository.Object,
             _dbContext.Object,
-            _emailService.Object);
+            _emailService.Object,
+            _notificationService.Object);
     }
 
     private static RegisterLearnerCommand ValidCommand(bool consent = true) => new(

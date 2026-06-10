@@ -98,6 +98,12 @@ export default function ProfilePage() {
             <div className="font-semibold text-gray-800 text-sm">My Documents</div>
             <div className="text-xs text-gray-500 mt-1">Upload & manage documents</div>
           </Link>
+          <Link to="/notifications/preferences"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">🔔</div>
+            <div className="font-semibold text-gray-800 text-sm">Notification Settings</div>
+            <div className="text-xs text-gray-500 mt-1">Choose how we reach you</div>
+          </Link>
           {isStaff && (
             <Link to="/admin/learners"
               className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">

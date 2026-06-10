@@ -108,16 +108,19 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 ---
 
 ## Phase 5: WhatsApp and Enhanced Notifications
-**Status:** Planned
+**Status:** Complete
 **Goal:** Meet learners where they are — on WhatsApp.
 
 ### Deliverables
-- [ ] WhatsApp Business API integration (requires Meta Business verification)
-- [ ] WhatsApp notification channel
-- [ ] WhatsApp basic chatbot for profile updates and deadline reminders
-- [ ] SMS fallback option
-- [ ] Notification preferences management for learners
-- [ ] Multi-channel notification service architecture
+- [x] Multi-channel notification service architecture (Email, WhatsApp, SMS) behind interfaces
+- [x] Notification preferences management for learners (Email opt-out, WhatsApp/SMS opt-in)
+- [x] Append-only notification log (delivery audit trail)
+- [x] Notification triggers wired to registration, application status change, and document verify/reject
+- [x] WhatsApp notification channel (stubbed — no Meta credentials; logs only)
+- [x] SMS fallback channel (stubbed — no gateway credentials; logs only)
+- [x] Notification preferences UI with honest "coming soon" labelling for WhatsApp/SMS
+- [ ] WhatsApp Business API integration (requires Meta Business verification — deferred)
+- [ ] WhatsApp basic chatbot for profile updates and deadline reminders (deferred)
 
 ---
 

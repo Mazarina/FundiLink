@@ -148,3 +148,9 @@ export interface LearnerApplication {
   deadlineDate?: string
   submittedAt?: string
 }
+
+export interface NotificationPreferences {
+  emailEnabled: boolean
+  whatsAppEnabled: boolean
+  smsEnabled: boolean
+}

@@ -50,6 +50,11 @@ public static class DependencyInjection
         services.AddScoped<ILearnerQueryRepository, LearnerQueryRepository>();
         services.AddScoped<IInstitutionRepository, InstitutionRepository>();
         services.AddScoped<IDocumentStorageService, LocalDiskDocumentStorageService>();
+        services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
+        services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
+        services.AddScoped<IWhatsAppService, StubWhatsAppService>();
+        services.AddScoped<ISmsService, StubSmsService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }

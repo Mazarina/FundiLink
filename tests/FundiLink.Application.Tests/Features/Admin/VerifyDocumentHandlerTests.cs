@@ -11,11 +11,12 @@ public class VerifyDocumentHandlerTests
 {
     private readonly Mock<IDocumentRepository> _documentRepository = new();
     private readonly Mock<IAuditLogRepository> _auditLogRepository = new();
+    private readonly Mock<INotificationService> _notificationService = new();
     private readonly VerifyDocumentHandler _sut;
 
     public VerifyDocumentHandlerTests()
     {
-        _sut = new VerifyDocumentHandler(_documentRepository.Object, _auditLogRepository.Object);
+        _sut = new VerifyDocumentHandler(_documentRepository.Object, _auditLogRepository.Object, _notificationService.Object);
     }
 
     private static Document BuildDocument() =>

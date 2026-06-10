@@ -125,17 +125,20 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 ---
 
 ## Phase 6: Bursary Hub and Partner Integrations
-**Status:** Planned
+**Status:** Complete (MVP)
 **Goal:** Expand beyond university applications to bursaries and funding.
 
 ### Deliverables
-- [ ] Bursary database (public bursary information)
-- [ ] Bursary eligibility matching
-- [ ] Bursary application tracker
-- [ ] Partner portal foundation (for institutions and funders to opt in)
-- [ ] Payment gateway (for premium features if applicable)
-- [ ] Skills development / learnership module foundation
-- [ ] Official integration framework (for formal partnerships only)
+- [x] Bursary database (curated public bursary information, guidance-only, disclaimed)
+- [x] Bursary eligibility matching (APS + province against learner profile; "you may qualify" guidance)
+- [x] Bursary application tracker (owner-scoped create / list / update status / delete)
+- [x] Admin bursary CRUD (RBAC Admin/SuperAdmin, append-only audit logging)
+- [x] Bursary Hub frontend (browse, detail, matches, tracker pages with guidance-only disclaimers)
+- [x] Unit tests for matching, application handlers, admin audit logging, and domain; frontend page tests
+- [ ] Partner portal foundation (read-only Bursary entity + admin CRUD delivered; no partner onboarding flow) (deferred)
+- [ ] Payment gateway (for premium features if applicable) (deferred — no third-party integrations this phase)
+- [ ] Skills development / learnership module foundation (deferred)
+- [ ] Official integration framework (for formal partnerships only) (deferred)
 
 ---
 

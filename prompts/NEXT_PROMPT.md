@@ -1,94 +1,56 @@
-# Phase 6 — Bursary Hub and Eligibility Matching (MVP)
+# Phase 7 — AI Guidance Assistant (MVP)
 
-You are building Phase 6 of FundiLink by ZulTek on branch `claude/happy-dirac-n7qgtg`.
+You are building Phase 7 of FundiLink by ZulTek on branch `claude/happy-dirac-n7qgtg`.
 
-FundiLink is a South African student opportunity platform (Clean Architecture: ASP.NET Core 8 backend, React+Vite+TypeScript frontend). Phases 1–5 are complete and green (all .NET + frontend tests pass, both build clean).
+FundiLink is a South African student opportunity platform (Clean Architecture: ASP.NET Core 8 backend, React+Vite+TypeScript frontend). Phases 1–6 are complete and green (all .NET + frontend tests pass, both build clean).
 
 **FIRST**: Read `/home/user/FundiLink/CLAUDE.md` fully. Key rules:
-- NEVER commit secrets, API keys, or credentials.
+- NEVER commit secrets, API keys, or credentials. The AI provider key MUST come from environment variables / user-secrets only — placeholder `SET_VIA_ENV` in `appsettings.json`.
 - dotnet is at `/usr/local/dotnet/dotnet`.
 - Push to `claude/happy-dirac-n7qgtg` only.
 - All existing tests must keep passing.
-- Follow existing CQRS/MediatR patterns (see `Features/Applications/`, `Features/ProgrammeMatching/`, `Features/Admin/`) and EF repository/configuration patterns under `Infrastructure/Persistence/`.
+- Follow existing CQRS/MediatR patterns (`Features/Applications/`, `Features/ProgrammeMatching/`, `Features/Bursaries/`, `Features/Admin/`) and the Phase 5 stub-behind-interface pattern (WhatsApp/SMS) and Phase 6 disclaimer pattern.
 
-**CRITICAL POSITIONING / DISCLAIMERS:**
-- FundiLink is NOT an official bursary, NSFAS, or funding admissions platform. Bursary data in this phase is **curated public information for guidance only**. The UI and API responses must make this clear.
-- NO real partner integrations, NO payment gateway, NO official funder API calls in this phase — anything touching a third party must be stubbed behind an interface (as Phase 5 did for WhatsApp/SMS).
-- Eligibility matching produces **guidance ("you may qualify")**, never a guarantee or an application submission.
-
----
+**CRITICAL POSITIONING / SAFETY:**
+- FundiLink is NOT an official advisor. AI output is **guidance only** and must never fabricate institution, programme, bursary, or NSFAS facts (no hallucinated APS cut-offs, deadlines, amounts, or contact details).
+- NO real LLM provider call in this phase by default — the assistant must sit behind an `IAiAssistantService` interface with a **deterministic stub implementation** (rule/template-based using the learner's own profile + APS + their matched programmes/bursaries). A real provider may be wired later behind the same interface, key via env only.
+- Every AI response carries a guidance-only disclaimer and a "verify with the official institution/funder / talk to a support agent" note.
 
 ## Scope — MVP only
 
-A bursary catalogue learners can browse, an eligibility matcher that uses the learner's existing profile + APS, a simple bursary application tracker, and the read-only foundation (entity + admin CRUD) for a future partner portal — no actual partner onboarding flow.
+A learner-facing guidance assistant that answers a constrained set of profile-aware questions (what do I qualify for, what is my APS, what documents do I still need, which bursaries may fit me), grounded ONLY in the learner's existing FundiLink data. No free-form open-domain chat with an external model in this phase.
 
-### 1. Domain (`src/FundiLink.Domain/`)
-- `Enums/BursaryFundingType.cs`: `{ FullCost, TuitionOnly, PartialTuition, Stipend, Accommodation }`
-- `Enums/BursaryStatus.cs` (catalogue visibility): `{ Open, ClosingSoon, Closed }`
-- `Enums/BursaryApplicationStatus.cs`: `{ Researching, Preparing, Submitted, Awarded, Rejected }` (separate tracker entity — do NOT overload LearnerApplication)
-- `Entities/Bursary.cs` (extends BaseEntity): Name, ProviderName, Description, FundingType, FieldsOfStudy (model like Programme's RequiredSubjects — child collection or delimited string), MinimumAps (int?), MaxHouseholdIncome (decimal?), ProvincesEligible, ApplicationOpenDate/CloseDate (DateTime?), ExternalApplicationUrl (learners apply on the funder's own portal), IsActive. Factory `Create(...)` + `Update(...)`, no public setters (match Programme/Institution style).
-- `Entities/BursaryApplication.cs` (extends BaseEntity): LearnerId, BursaryId, BursaryApplicationStatus, Notes, DeadlineDate. Factory + `UpdateStatus(...)` (mirror LearnerApplication).
-- Add `BursaryStatusChange` to `Enums/NotificationType.cs`.
+### 1. Domain / Application
+- `IAiAssistantService` interface in `Application/Common/Interfaces/` with a typed request/response (no `dynamic`/`object`).
+- `Features/Assistant/` CQRS: `AskAssistant` command/query — takes the learner's question (from a small enum or validated intent set) + UserId, loads the learner + APS + matches via existing repositories, returns a grounded `AssistantResponseDto` with `answer`, `sources` (which FundiLink data was used), `guidanceOnly: true`, and a disclaimer string.
+- Deterministic stub `RuleBasedAiAssistantService` in Infrastructure implementing the interface — no external calls. Register in `DependencyInjection.cs`.
+- Append-only audit/log of assistant interactions if it touches sensitive data (reuse notification/audit log patterns; POPIA-minimal — do not store more than necessary).
 
-### 2. Application (`src/FundiLink.Application/`)
-- Interfaces: `IBursaryRepository`, `IBursaryApplicationRepository` (mirror `IProgrammeRepository` / `IApplicationRepository`).
-- CQRS in `Features/Bursaries/`:
-  - Queries: `GetBursaries` (filter by field of study / province / funding type, active only, disclaimer note in DTO), `GetBursaryById`.
-  - Query `GetBursaryMatches` — uses `ILearnerRepository` + the learner's `AcademicProfile.ApsScore`; return bursaries where MinimumAps is null or <= learner APS AND (ProvincesEligible empty or contains learner province). Return a match DTO with `reasons` and `guidanceOnly: true`, consistent with Phase 3 `ProgrammeMatching`.
-  - Commands: `CreateBursaryApplication`, `UpdateBursaryApplicationStatus`, `DeleteBursaryApplication` — owner-scoped (enforce the learner owns the record). On status change, call `INotificationService.NotifyAsync` with `NotificationType.BursaryStatusChange`.
-  - Query: `GetMyBursaryApplications`.
-- Admin CQRS in `Features/Admin/` (mirror CreateProgramme/UpdateProgramme): `CreateBursary`, `UpdateBursary`. RBAC Admin/SuperAdmin. Append-only `AuditLogEntry` for each create/update (reuse `IAuditLogRepository`).
+### 2. API
+- `AssistantController` (`api/v1/assistant`) `[Authorize]`, owner-scoped (uses the caller's identity; never another learner's data).
+- Request DTO in `Models/Requests.cs`. Validate the intent at the API boundary.
 
-### 3. Infrastructure (`src/FundiLink.Infrastructure/`)
-- `BursaryRepository`, `BursaryApplicationRepository` (mirror existing repos).
-- EF configs: `BursaryConfiguration` (ToTable("Bursaries"), enums as strings, soft-delete query filter), `BursaryApplicationConfiguration` (ToTable("BursaryApplications"), enums as strings, soft-delete filter).
-- Add DbSets to `FundiLinkDbContext`; register repos in `DependencyInjection.cs`.
-- Generate migration:
-  ```
-  /usr/local/dotnet/dotnet ef migrations add AddBursaries \
-    --project src/FundiLink.Infrastructure --startup-project src/FundiLink.Api \
-    --output-dir Persistence/Migrations
-  ```
-- Optionally seed 3–5 well-known **public** bursary examples (e.g. NSFAS guidance, Funza Lushaka) via the existing seeding mechanism — clearly marked guidance-only, no fabricated amounts/contact details; keep descriptions generic if unsure.
+### 3. Frontend
+- `src/features/assistant/assistantApi.ts`, an `AssistantPage` (constrained question chips/intents, grounded answers, clear guidance-only disclaimer, link to support).
+- Route in `App.tsx` (ProtectedRoute) + an "Ask FundiLink" tile on `ProfilePage`.
+- Follow existing Tailwind/brand + error/loading patterns.
 
-### 4. API (`src/FundiLink.Api/`)
-- `BursariesController` (`api/v1/bursaries`): GET list (filters), GET by id, GET `/matches`. `[Authorize]`.
-- Bursary application endpoints `api/v1/bursary-applications` (mirror ApplicationsController): create, list mine, update status, delete.
-- Admin bursary CRUD — RBAC `[Authorize(Roles=...)]` Admin/SuperAdmin, matching programme/institution admin protection.
-- Add request DTOs to `Models/Requests.cs`.
-- Every bursary-facing DTO carries a guidance-only disclaimer field/string.
+### 4. Tests
+- Backend: stub assistant returns grounded answers from profile/APS; owner-scope enforced (unauthorised rejected); no-profile path handled; intent validation (>= 4 tests).
+- Frontend: >= 3 tests (renders disclaimer, renders a grounded answer from mocked API, intent selection triggers API call).
 
-### 5. Frontend (`src/fundilink-web/`)
-- Types in `src/types/index.ts`: `Bursary`, `BursaryMatch`, `BursaryApplication`, enums as string unions.
-- API client `src/features/bursaries/bursariesApi.ts`.
-- Pages: `BursariesPage` (browse + filter), `BursaryDetailPage` (details + clear "This is guidance only. Apply on the funder's official portal." note + external link), `BursaryMatchesPage` (uses learner APS/profile), `BursaryApplicationsPage` (tracker, mirror ApplicationsPage).
-- Routing in `App.tsx` (ProtectedRoute). Add a "Bursary Hub" tile to `ProfilePage`.
-- Follow existing Tailwind/brand styling and the messaging/error patterns from `ProgrammesPage`/`ApplicationsPage`.
-
-### 6. Tests
-**Backend** in `tests/FundiLink.Application.Tests/Features/Bursaries/` (and `Features/Admin/`):
-- `GetBursaryMatchesHandlerTests` — APS at/above minimum matches; below does not; null minimum always matches; province filter respected (>= 4 tests).
-- Bursary application handler tests — create, update status (verify `INotificationService` called), owner-scope enforcement (unauthorised learner rejected), delete (>= 4 tests).
-- Admin `CreateBursary`/`UpdateBursary` — writes audit log (>= 2 tests).
-- Domain tests for `Bursary.Create`/`Update` and `BursaryApplication.UpdateStatus` (>= 2 tests).
-**Frontend** — at least 3 tests across new pages (mock the API): renders matches, renders guidance-only disclaimer, tracker status update.
-
-### 7. Execution steps
-1. Read `CLAUDE.md`.
-2. Explore Phase 3 (`Features/Applications`, `Features/ProgrammeMatching`) and Phase 4 admin patterns as templates.
-3. Domain → Application → Infrastructure (+ migration) → API → Frontend → Tests.
-4. `/usr/local/dotnet/dotnet build FundiLink.sln` and `dotnet test` — all existing + new tests pass.
-5. Frontend `npm run build` and `npm test -- --run` — clean.
-6. Update `ROADMAP.md` Phase 6 checklist (mark delivered; leave payment gateway / official integration framework / skills module deferred).
-7. Write the Phase 7 prompt into `prompts/NEXT_PROMPT.md` (per ROADMAP — scoped, MVP-only, no real integrations).
-8. Commit: `Add Phase 6 bursary hub and eligibility matching`.
-9. Push: `git push -u origin claude/happy-dirac-n7qgtg`.
+### 5. Execution steps
+1. Read CLAUDE.md, then Phase 3/6 features as templates.
+2. Domain/Application -> Infrastructure (stub + DI) -> API -> Frontend -> Tests.
+3. `/usr/local/dotnet/dotnet build FundiLink.sln` and `dotnet test` — all green.
+4. Frontend `npm run build` and `npm test -- --run` — clean.
+5. Update `ROADMAP.md` Phase 7 checklist (mark MVP delivered; real LLM provider / open-domain chat / human-handoff automation deferred).
+6. Write the Phase 8 prompt into `prompts/NEXT_PROMPT.md`.
+7. Commit: `Add Phase 7 AI guidance assistant (stub)`.
+8. Push: `git push -u origin claude/happy-dirac-n7qgtg`.
 
 **Security/privacy notes for commit message:**
-- No real funder/partner API integrations or payment gateway — guidance-only, stubbed where third parties would be involved.
-- Bursary data is curated public information presented as guidance, not official admissions.
-- BursaryApplication is owner-scoped; admin bursary writes are audit-logged.
+- No real LLM provider integration — deterministic stub behind `IAiAssistantService`; any future key via env only.
+- AI output is guidance only, grounded strictly in the learner's own FundiLink data; no fabricated institution/funder facts.
+- Assistant is owner-scoped; sensitive access minimised per POPIA.
 - No secrets committed.
-
-**dotnet is at `/usr/local/dotnet/dotnet`**
-**Never commit secrets.**

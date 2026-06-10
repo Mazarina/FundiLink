@@ -18,6 +18,10 @@ import AdminLearnersPage from './pages/AdminLearnersPage'
 import AdminLearnerDetailPage from './pages/AdminLearnerDetailPage'
 import NotificationPreferencesPage from './pages/NotificationPreferencesPage'
 import AuditLogPage from './pages/AuditLogPage'
+import BursariesPage from './pages/BursariesPage'
+import BursaryDetailPage from './pages/BursaryDetailPage'
+import BursaryMatchesPage from './pages/BursaryMatchesPage'
+import BursaryApplicationsPage from './pages/BursaryApplicationsPage'
 
 const ADMIN_ROLES = ['Admin', 'SupportAgent', 'SuperAdmin']
 
@@ -38,6 +42,10 @@ function App() {
           <Route path="/applications" element={<ProtectedRoute><ApplicationsPage /></ProtectedRoute>} />
           <Route path="/applications/:id" element={<ProtectedRoute><ApplicationDetailPage /></ProtectedRoute>} />
           <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+          <Route path="/bursaries" element={<ProtectedRoute><BursariesPage /></ProtectedRoute>} />
+          <Route path="/bursaries/matches" element={<ProtectedRoute><BursaryMatchesPage /></ProtectedRoute>} />
+          <Route path="/bursaries/:id" element={<ProtectedRoute><BursaryDetailPage /></ProtectedRoute>} />
+          <Route path="/bursary-applications" element={<ProtectedRoute><BursaryApplicationsPage /></ProtectedRoute>} />
           <Route path="/notifications/preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
           <Route path="/admin/learners" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnersPage /></ProtectedRoute>} />
           <Route path="/admin/learners/:id" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnerDetailPage /></ProtectedRoute>} />

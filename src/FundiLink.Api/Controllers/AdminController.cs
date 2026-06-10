@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using FundiLink.Api.Models;
+using FundiLink.Application.Features.Admin.Commands.CreateBursary;
 using FundiLink.Application.Features.Admin.Commands.CreateInstitution;
 using FundiLink.Application.Features.Admin.Commands.CreateProgramme;
+using FundiLink.Application.Features.Admin.Commands.UpdateBursary;
 using FundiLink.Application.Features.Admin.Commands.RejectDocument;
 using FundiLink.Application.Features.Admin.Commands.UpdateInstitution;
 using FundiLink.Application.Features.Admin.Commands.UpdateProgramme;
@@ -119,6 +121,32 @@ public class AdminController : ControllerBase
         await _mediator.Send(
             new UpdateProgrammeCommand(ActorUserId, ActorRole, id, request.Name, request.FacultyOrSchool, request.NfqLevel,
                 request.MinimumAps, subjects, request.ApplicationOpenDate, request.ApplicationCloseDate, request.IsActive),
+            cancellationToken);
+        return NoContent();
+    }
+
+    // Bursary data is curated public information for guidance only. Admin writes are audit-logged.
+    [HttpPost("bursaries")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> CreateBursary([FromBody] CreateBursaryRequest request, CancellationToken cancellationToken)
+    {
+        var id = await _mediator.Send(
+            new CreateBursaryCommand(ActorUserId, ActorRole, request.Name, request.ProviderName, request.Description,
+                request.FundingType, request.FieldsOfStudy, request.MinimumAps, request.MaxHouseholdIncome,
+                request.ProvincesEligible, request.ApplicationOpenDate, request.ApplicationCloseDate, request.ExternalApplicationUrl),
+            cancellationToken);
+        return Ok(new { id });
+    }
+
+    [HttpPut("bursaries/{id:guid}")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> UpdateBursary(Guid id, [FromBody] UpdateBursaryRequest request, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(
+            new UpdateBursaryCommand(ActorUserId, ActorRole, id, request.Name, request.ProviderName, request.Description,
+                request.FundingType, request.FieldsOfStudy, request.MinimumAps, request.MaxHouseholdIncome,
+                request.ProvincesEligible, request.ApplicationOpenDate, request.ApplicationCloseDate,
+                request.ExternalApplicationUrl, request.IsActive),
             cancellationToken);
         return NoContent();
     }

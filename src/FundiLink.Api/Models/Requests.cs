@@ -49,3 +49,31 @@ public record UpdateProgrammeRequest(string Name, string? FacultyOrSchool, int? 
 public record RequiredSubjectRequest(string SubjectName, int MinimumPercentage);
 
 public record UpdateNotificationPreferencesRequest(bool EmailEnabled, bool WhatsAppEnabled, bool SmsEnabled);
+
+public record CreateBursaryApplicationRequest(Guid BursaryId, BursaryApplicationStatus Status, string? Notes, DateTime? DeadlineDate);
+public record UpdateBursaryApplicationStatusRequest(BursaryApplicationStatus NewStatus, string? Notes);
+public record CreateBursaryRequest(
+    string Name,
+    string ProviderName,
+    string Description,
+    BursaryFundingType FundingType,
+    List<string> FieldsOfStudy,
+    int? MinimumAps,
+    decimal? MaxHouseholdIncome,
+    List<string> ProvincesEligible,
+    DateTime? ApplicationOpenDate,
+    DateTime? ApplicationCloseDate,
+    string? ExternalApplicationUrl);
+public record UpdateBursaryRequest(
+    string Name,
+    string ProviderName,
+    string Description,
+    BursaryFundingType FundingType,
+    List<string> FieldsOfStudy,
+    int? MinimumAps,
+    decimal? MaxHouseholdIncome,
+    List<string> ProvincesEligible,
+    DateTime? ApplicationOpenDate,
+    DateTime? ApplicationCloseDate,
+    string? ExternalApplicationUrl,
+    bool IsActive);

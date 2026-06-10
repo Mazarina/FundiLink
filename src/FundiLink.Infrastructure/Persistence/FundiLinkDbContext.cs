@@ -22,6 +22,8 @@ public class FundiLinkDbContext : IdentityDbContext, IApplicationDbContext
     public DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
     public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
+    public DbSet<Bursary> Bursaries => Set<Bursary>();
+    public DbSet<BursaryApplication> BursaryApplications => Set<BursaryApplication>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -154,3 +154,46 @@ export interface NotificationPreferences {
   whatsAppEnabled: boolean
   smsEnabled: boolean
 }
+
+export type BursaryFundingType = 'FullCost' | 'TuitionOnly' | 'PartialTuition' | 'Stipend' | 'Accommodation'
+export type BursaryApplicationStatus = 'Researching' | 'Preparing' | 'Submitted' | 'Awarded' | 'Rejected'
+
+export interface Bursary {
+  id: string
+  name: string
+  providerName: string
+  description: string
+  fundingType: BursaryFundingType
+  fieldsOfStudy: string[]
+  minimumAps?: number
+  maxHouseholdIncome?: number
+  provincesEligible: string[]
+  applicationOpenDate?: string
+  applicationCloseDate?: string
+  externalApplicationUrl?: string
+  disclaimer: string
+}
+
+export interface BursaryMatch {
+  bursaryId: string
+  name: string
+  providerName: string
+  fundingType: BursaryFundingType
+  minimumAps?: number
+  externalApplicationUrl?: string
+  reasons: string[]
+  guidanceOnly: boolean
+  disclaimer: string
+}
+
+export interface BursaryApplication {
+  id: string
+  bursaryId: string
+  bursaryName: string
+  providerName: string
+  status: BursaryApplicationStatus
+  notes?: string
+  deadlineDate?: string
+  externalApplicationUrl?: string
+  disclaimer: string
+}

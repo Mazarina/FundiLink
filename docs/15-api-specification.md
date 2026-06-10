@@ -162,6 +162,48 @@ Remove an application from the tracker (soft delete).
 
 ---
 
+## Bursary Endpoints
+All bursary responses carry a guidance-only disclaimer. Bursary data is curated public
+information for guidance only — FundiLink is not an official bursary/NSFAS/funding platform.
+
+### GET /api/v1/bursaries
+List active bursaries. Optional filters: `fieldOfStudy`, `province`, `fundingType`.
+- Auth: Authenticated
+
+### GET /api/v1/bursaries/{id}
+Bursary detail (includes external funder portal URL where available).
+- Auth: Authenticated
+
+### GET /api/v1/bursaries/matches
+Bursaries the learner may qualify for, based on their APS and province (guidance only).
+- Auth: Authenticated (own profile)
+
+### POST /api/v1/bursary-applications
+Start tracking a bursary application.
+- Auth: Student (creates an owner-scoped record)
+
+### GET /api/v1/bursary-applications
+List the caller's tracked bursary applications.
+- Auth: Student (own records only)
+
+### PUT /api/v1/bursary-applications/{id}/status
+Update tracked bursary application status. Triggers a BursaryStatusChange notification.
+- Auth: Student (own records only)
+
+### DELETE /api/v1/bursary-applications/{id}
+Remove a tracked bursary application (soft delete).
+- Auth: Student (own records only)
+
+### POST /api/v1/admin/bursaries
+Create a bursary (curated public guidance data). Append-only audit-logged.
+- Auth: Admin, SuperAdmin
+
+### PUT /api/v1/admin/bursaries/{id}
+Update a bursary. Append-only audit-logged.
+- Auth: Admin, SuperAdmin
+
+---
+
 ## Document Endpoints
 
 ### GET /api/v1/documents

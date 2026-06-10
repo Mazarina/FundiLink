@@ -1,3 +1,3 @@
 namespace FundiLink.Domain.Enums;
 
-public enum NotificationType { DeadlineReminder, ApplicationStatusChange, DocumentVerificationResult, RegistrationWelcome }
+public enum NotificationType { DeadlineReminder, ApplicationStatusChange, DocumentVerificationResult, RegistrationWelcome, BursaryStatusChange }

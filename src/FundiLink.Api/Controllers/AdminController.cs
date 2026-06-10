@@ -8,6 +8,7 @@ using FundiLink.Application.Features.Admin.Commands.UpdateProgramme;
 using FundiLink.Application.Features.Admin.Commands.VerifyDocument;
 using FundiLink.Application.Features.Admin.Queries.GetLearnerOverview;
 using FundiLink.Application.Features.Admin.Queries.SearchLearners;
+using FundiLink.Application.Features.Documents.Queries.DownloadDocument;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -49,6 +50,17 @@ public class AdminController : ControllerBase
     {
         var result = await _mediator.Send(new GetLearnerOverviewQuery(ActorUserId, ActorRole, id), cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("documents/{id:guid}/download")]
+    [Authorize(Roles = "SupportAgent,Admin,SuperAdmin")]
+    public async Task<IActionResult> DownloadDocument(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new DownloadDocumentQuery(id, ActorUserId, IsAdminOrSupport: true, ActorRole: ActorRole),
+            cancellationToken);
+        Response.Headers.ContentDisposition = $"attachment; filename=\"{result.FileName}\"";
+        return File(result.Stream, result.ContentType);
     }
 
     [HttpPost("documents/{id:guid}/verify")]

@@ -104,6 +104,12 @@ export default function ProfilePage() {
             <div className="font-semibold text-gray-800 text-sm">Bursary Hub</div>
             <div className="text-xs text-gray-500 mt-1">Find funding you may qualify for</div>
           </Link>
+          <Link to="/assistant"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">💬</div>
+            <div className="font-semibold text-gray-800 text-sm">Ask FundiLink</div>
+            <div className="text-xs text-gray-500 mt-1">Get guidance from your profile</div>
+          </Link>
           <Link to="/notifications/preferences"
             className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
             <div className="text-3xl mb-2">🔔</div>

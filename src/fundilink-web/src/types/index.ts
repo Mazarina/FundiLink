@@ -197,3 +197,17 @@ export interface BursaryApplication {
   externalApplicationUrl?: string
   disclaimer: string
 }
+
+export type AssistantIntent =
+  | 'WhatDoIQualifyFor'
+  | 'WhatIsMyAps'
+  | 'WhatDocumentsDoINeed'
+  | 'WhichBursariesFitMe'
+
+export interface AssistantResponse {
+  intent: AssistantIntent
+  answer: string
+  sources: string[]
+  guidanceOnly: boolean
+  disclaimer: string
+}

@@ -58,6 +58,11 @@ public static class DependencyInjection
         services.AddScoped<IBursaryRepository, BursaryRepository>();
         services.AddScoped<IBursaryApplicationRepository, BursaryApplicationRepository>();
 
+        // AI guidance assistant — deterministic stub behind the interface. No external LLM
+        // call in this phase. A real provider may be wired here later (key via env only).
+        services.AddScoped<IAiAssistantService, RuleBasedAiAssistantService>();
+        services.AddScoped<IAssistantInteractionLogRepository, AssistantInteractionLogRepository>();
+
         return services;
     }
 }

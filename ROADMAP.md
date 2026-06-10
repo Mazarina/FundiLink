@@ -142,18 +142,24 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
-## Phase 7: AI Guidance Assistant
-**Status:** Planned
+## Phase 7: AI Guidance Assistant (MVP delivered)
+**Status:** MVP delivered
 **Goal:** Give every learner access to intelligent, personalised guidance.
 
 ### Deliverables
-- [ ] AI assistant integrated into learner workflow
-- [ ] Contextual guidance based on learner profile and APS
-- [ ] Answer questions about programmes, institutions, and funding
-- [ ] Plain language explanations
-- [ ] Safe, accurate responses — no hallucinated institution facts
-- [ ] Fallback to human support agent when needed
-- [ ] Responsible AI policy documented and implemented
+- [x] AI assistant integrated into learner workflow (`Ask FundiLink` page + profile tile)
+- [x] Contextual guidance based on learner profile and APS (grounded strictly in the learner's own FundiLink data)
+- [x] Answer a constrained set of questions about programmes, APS, documents, and funding
+- [x] Plain language explanations
+- [x] Safe, accurate responses — no hallucinated institution facts (deterministic `RuleBasedAiAssistantService` behind `IAiAssistantService`; no external LLM call)
+- [x] Guidance-only disclaimer on every response + link to human support agent
+- [x] Owner-scoped access and append-only, POPIA-minimal interaction log
+
+### Deferred (post-MVP)
+- [ ] Real LLM provider wired behind `IAiAssistantService` (API key via environment only)
+- [ ] Free-form open-domain chat
+- [ ] Automated human-handoff / live support agent routing
+- [ ] Responsible AI policy documented in full
 
 ---
 

@@ -238,6 +238,20 @@ Mark notification as read.
 
 ---
 
+## Assistant Endpoints
+
+### POST /api/v1/assistant/ask
+Ask the AI guidance assistant a constrained, profile-aware question.
+- Auth: Student (owner-scoped — only the caller's own FundiLink data is used)
+- Request body: `{ "intent": "WhatIsMyAps" | "WhatDoIQualifyFor" | "WhichBursariesFitMe" | "WhatDocumentsDoINeed" }`
+- Response: `{ intent, answer, sources[], guidanceOnly: true, disclaimer }`
+- Invalid intent returns `400 Bad Request`.
+- Guidance only: answers are grounded strictly in the learner's own FundiLink data via a deterministic
+  rule-based service (`IAiAssistantService`). No external LLM call and no fabricated institution,
+  programme, bursary, or NSFAS facts. Each interaction is logged append-only (POPIA-minimal: intent + timestamp).
+
+---
+
 ## Admin Endpoints
 
 ### GET /api/v1/admin/learners

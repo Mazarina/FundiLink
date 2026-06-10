@@ -77,3 +77,5 @@ public record UpdateBursaryRequest(
     DateTime? ApplicationCloseDate,
     string? ExternalApplicationUrl,
     bool IsActive);
+
+public record AskAssistantRequest(AssistantIntent Intent);

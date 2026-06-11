@@ -462,6 +462,32 @@ Returns `204`.
 
 ---
 
+## Reporting (Phase 11)
+
+Read-only admin reporting. Dashboard and POPIA summary expose aggregate figures only (no raw
+learner PII). The audit activity report is a filtered view over the existing append-only audit
+log. All endpoints are read-only and RBAC-gated; no new way to read learner sensitive fields is
+introduced. No third-party analytics/telemetry provider is involved.
+
+### GET /api/v1/reporting/dashboard
+Returns aggregate operational figures: `totalLearners`, `learnersByProvince[]`,
+`applicationsByStatus[]`, `bursaryApplicationsByStatus[]`, `documentsByStatus[]`,
+`pendingDocumentVerifications`, `pendingErasureRequests`, `consentGrants`, `consentRevocations`.
+Grouped figures are `{ category, count }` arrays.
+- Auth: SupportAgent, Admin, SuperAdmin
+
+### GET /api/v1/reporting/popia-summary
+Returns the open POPIA work-queue counts: `{ pendingDocumentVerifications, pendingErasureRequests }`.
+- Auth: SupportAgent, Admin, SuperAdmin
+
+### GET /api/v1/reporting/audit-activity
+Filtered, paged view over the append-only audit log. Query: `action?`, `actorRole?`, `from?`
+(UTC), `to?` (UTC), `page` (default 1), `pageSize` (default 50, max 200). Returns a
+`PagedResult<AuditLogEntry>`. Read-only.
+- Auth: SuperAdmin
+
+---
+
 ## Health
 
 ### GET /health

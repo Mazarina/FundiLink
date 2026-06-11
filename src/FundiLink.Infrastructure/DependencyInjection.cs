@@ -87,6 +87,12 @@ public static class DependencyInjection
         services.AddScoped<IErasureRequestRepository, ErasureRequestRepository>();
         services.AddScoped<IErasureService, DeterministicErasureService>();
 
+        // Admin reporting & POPIA operations dashboard (Phase 11). Read-only, aggregate-first
+        // reporting computed deterministically in-process behind IReportingRepository. No
+        // third-party analytics/telemetry provider; a real provider may be wired later behind
+        // the same interface (key via env only). Adds no new way to read learner sensitive fields.
+        services.AddScoped<IReportingRepository, ReportingRepository>();
+
         return services;
     }
 }

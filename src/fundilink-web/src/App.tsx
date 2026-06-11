@@ -31,6 +31,8 @@ import ConsentPage from './pages/ConsentPage'
 import GuardianViewPage from './pages/GuardianViewPage'
 import DataRightsPage from './pages/DataRightsPage'
 import AdminErasureQueuePage from './pages/AdminErasureQueuePage'
+import AdminReportingDashboardPage from './pages/AdminReportingDashboardPage'
+import AdminAuditActivityPage from './pages/AdminAuditActivityPage'
 
 const ADMIN_ROLES = ['Admin', 'SupportAgent', 'SuperAdmin']
 
@@ -68,6 +70,8 @@ function App() {
           <Route path="/admin/learners/:id" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnerDetailPage /></ProtectedRoute>} />
           <Route path="/admin/audit" element={<ProtectedRoute roles={['SuperAdmin']}><AuditLogPage /></ProtectedRoute>} />
           <Route path="/admin/erasure-requests" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminErasureQueuePage /></ProtectedRoute>} />
+          <Route path="/admin/reporting" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminReportingDashboardPage /></ProtectedRoute>} />
+          <Route path="/admin/audit-activity" element={<ProtectedRoute roles={['SuperAdmin']}><AdminAuditActivityPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>

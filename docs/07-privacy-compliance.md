@@ -182,6 +182,28 @@ Phase 10 implements the POPIA right of access (data export) and right to erasure
 
 ---
 
+## Admin Reporting & POPIA Operations Dashboard (Phase 11)
+
+The staff reporting feature is **read-only and aggregate-first**. It introduces **no new way to
+read learner sensitive fields**:
+
+- The operations dashboard and POPIA operations summary return **aggregate counts and grouped
+  totals only** (e.g. learners by province, applications by status, pending document
+  verifications, pending erasure requests, consent grants vs revocations). No personal
+  information is contained in these responses.
+- The audit activity report is a **filtered, paged view over the existing append-only audit log**
+  (by action, actor role, date range). It surfaces only the fields the audit log already records;
+  it never mutates audit data.
+- All reporting endpoints are **RBAC-gated** (dashboard & POPIA summary: SupportAgent/Admin/
+  SuperAdmin; audit activity report: SuperAdmin). Aggregate endpoints surface no individual
+  learner, so they add no new per-learner audit entries; existing per-learner admin access
+  (e.g. learner search/overview) remains append-only audit-logged as before.
+- Aggregation is **deterministic and computed in-process** behind `IReportingRepository`. There
+  is **no third-party analytics/telemetry provider integration**; a real provider may be wired
+  later behind the same interface, with any key supplied via environment variables only.
+
+---
+
 ## Privacy-by-Design Checklist (for developers)
 - [ ] Is there a consent notice for new data collection?
 - [ ] Is the data minimised to what is needed?

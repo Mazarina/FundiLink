@@ -229,6 +229,26 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
+## Phase 11: Admin Reporting & POPIA Operations Dashboard (MVP delivered)
+**Status:** MVP delivered
+**Goal:** Give staff a read-only, aggregate-first operations dashboard and POPIA work-queue overview, plus a filtered audit activity report — adding no new way to read learner sensitive fields.
+
+### Deliverables
+- [x] `IReportingRepository` / `ReportingRepository` — deterministic, in-process aggregation over existing data (counts and grouped totals only; no raw learner PII). No third-party analytics/telemetry provider; a real provider may be wired later behind the same interface (key via env only)
+- [x] `IAuditLogRepository.GetFilteredAsync` — filtered, paged read over the append-only audit log (by action, actor role, date range); reads only, never mutates
+- [x] `Features/Reporting/` CQRS — operations dashboard aggregates, POPIA operations summary, audit activity report (composes the existing audit query); typed DTOs only
+- [x] `ReportingController` under `api/v1/reporting` — `dashboard` & `popia-summary` (SupportAgent/Admin/SuperAdmin), `audit-activity` (SuperAdmin); `[Authorize]`, read-only, input validated at boundary
+- [x] Reporting is aggregate-first and surfaces no individual learner, so no new per-learner audit entries are introduced; existing per-learner admin access remains audit-logged
+- [x] Frontend: `src/features/reporting/` api wrappers, `AdminReportingDashboardPage` (aggregate cards + POPIA operations summary linking to the existing document/erasure queues), `AdminAuditActivityPage` (filters + paged table, SuperAdmin), profile tile, role-gated routes in `App.tsx`
+- [x] Backend tests (dashboard computes expected aggregate counts, POPIA summary returns pending counts, audit report filters by action/role and by date range, RBAC — unauthenticated rejected) and frontend tests (dashboard renders aggregate cards, POPIA summary renders pending counts/links, audit filter triggers API)
+
+### Deferred (post-MVP)
+- [ ] Time-bucketed trend series (daily/weekly) and chart visualisations (deferred)
+- [ ] Real analytics/telemetry provider behind `IReportingRepository` (key via environment only) (deferred)
+- [ ] CSV/PDF export of reports (deferred)
+
+---
+
 ## Notes
 
 - Phases may overlap or be reprioritised based on learner feedback and business needs

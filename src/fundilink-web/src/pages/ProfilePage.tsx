@@ -162,6 +162,14 @@ export default function ProfilePage() {
               <div className="text-xs text-gray-500 mt-1">Review &amp; fulfil erasure requests</div>
             </Link>
           )}
+          {isStaff && (
+            <Link to="/admin/reporting"
+              className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+              <div className="text-3xl mb-2">📊</div>
+              <div className="font-semibold text-gray-800 text-sm">Reporting Dashboard</div>
+              <div className="text-xs text-gray-500 mt-1">Operations &amp; POPIA overview</div>
+            </Link>
+          )}
         </div>
       </div>
     </main>

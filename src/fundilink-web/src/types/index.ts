@@ -382,3 +382,36 @@ export interface DataExport {
   consentHistory: unknown[]
   disclaimer: string
 }
+
+// Admin reporting & POPIA operations dashboard (Phase 11). Aggregate, read-only figures —
+// no raw learner personal information.
+export interface CountByCategory {
+  category: string
+  count: number
+}
+
+export interface OperationsDashboard {
+  totalLearners: number
+  learnersByProvince: CountByCategory[]
+  applicationsByStatus: CountByCategory[]
+  bursaryApplicationsByStatus: CountByCategory[]
+  documentsByStatus: CountByCategory[]
+  pendingDocumentVerifications: number
+  pendingErasureRequests: number
+  consentGrants: number
+  consentRevocations: number
+}
+
+export interface PopiaOperationsSummary {
+  pendingDocumentVerifications: number
+  pendingErasureRequests: number
+}
+
+export interface AuditActivityFilters {
+  action?: string
+  actorRole?: string
+  from?: string
+  to?: string
+  page?: number
+  pageSize?: number
+}

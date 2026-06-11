@@ -1,12 +1,30 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getOperationsDashboard, getPopiaOperationsSummary } from '../features/reporting/reportingApi'
-import type { CountByCategory, OperationsDashboard, PopiaOperationsSummary } from '../types'
+import { runDeadlineReminders } from '../features/notifications/notificationsApi'
+import type { CountByCategory, OperationsDashboard, PopiaOperationsSummary, ReminderRunResult } from '../types'
 
 export default function AdminReportingDashboardPage() {
   const [dashboard, setDashboard] = useState<OperationsDashboard | null>(null)
   const [popia, setPopia] = useState<PopiaOperationsSummary | null>(null)
   const [error, setError] = useState('')
+  const [running, setRunning] = useState(false)
+  const [runResult, setRunResult] = useState<ReminderRunResult | null>(null)
+  const [runError, setRunError] = useState('')
+
+  async function handleRunReminders() {
+    setRunError('')
+    setRunResult(null)
+    setRunning(true)
+    try {
+      const result = await runDeadlineReminders(14)
+      setRunResult(result)
+    } catch {
+      setRunError('Could not run the reminder pass. Please try again.')
+    } finally {
+      setRunning(false)
+    }
+  }
 
   useEffect(() => {
     Promise.all([getOperationsDashboard(), getPopiaOperationsSummary()])
@@ -53,6 +71,31 @@ export default function AdminReportingDashboardPage() {
               count={popia.pendingErasureRequests}
             />
           </div>
+        </section>
+
+        <section className="bg-white rounded-xl shadow-sm p-5 mb-6">
+          <h2 className="text-lg font-semibold text-brand-primary mb-1">Deadline reminders</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Run a guidance reminder pass for upcoming application deadlines (next 14 days). Honours
+            each learner's notification preferences and consent. Stub delivery only; the run is
+            audit-logged.
+          </p>
+          {runError && (
+            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">{runError}</div>
+          )}
+          {runResult && (
+            <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded text-green-700 text-sm">
+              Run complete: {runResult.remindersSent} sent, {runResult.remindersSkippedAlreadySent} skipped
+              ({runResult.learnersWithUpcomingDeadlines} learners with upcoming deadlines).
+            </div>
+          )}
+          <button
+            onClick={handleRunReminders}
+            disabled={running}
+            className="bg-brand-primary text-white px-5 py-2 rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-50"
+          >
+            {running ? 'Running...' : 'Run deadline reminders'}
+          </button>
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

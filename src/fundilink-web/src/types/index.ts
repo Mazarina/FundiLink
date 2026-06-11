@@ -155,6 +155,31 @@ export interface NotificationPreferences {
   smsEnabled: boolean
 }
 
+export type NotificationType =
+  | 'DeadlineReminder'
+  | 'ApplicationStatusChange'
+  | 'DocumentVerificationResult'
+  | 'RegistrationWelcome'
+  | 'BursaryStatusChange'
+
+export type NotificationChannel = 'Email' | 'WhatsApp' | 'Sms'
+export type NotificationStatus = 'Sent' | 'Failed' | 'Skipped'
+
+export interface NotificationLogEntry {
+  id: string
+  notificationType: NotificationType
+  channel: NotificationChannel
+  status: NotificationStatus
+  sentAt: string
+  errorMessage?: string | null
+}
+
+export interface ReminderRunResult {
+  learnersWithUpcomingDeadlines: number
+  remindersSent: number
+  remindersSkippedAlreadySent: number
+}
+
 export type BursaryFundingType = 'FullCost' | 'TuitionOnly' | 'PartialTuition' | 'Stipend' | 'Accommodation'
 export type BursaryApplicationStatus = 'Researching' | 'Preparing' | 'Submitted' | 'Awarded' | 'Rejected'
 

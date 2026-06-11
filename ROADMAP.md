@@ -249,6 +249,27 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
+## Phase 12: Notifications & Deadline Reminders Activation (MVP delivered)
+**Status:** MVP delivered
+**Goal:** Activate deterministic, in-process deadline-reminder generation plus learner notification history and an admin-triggered reminder run — reusing the Phase 5 notification stack and respecting preferences and consent. Guidance only; no real third-party delivery provider.
+
+### Deliverables
+- [x] `IDeadlineQueryRepository` / `DeadlineQueryRepository` — read-only, deterministic query over upcoming programme/bursary application deadlines for active (non-deleted) learners within a date window; returns minimal fields only
+- [x] `IDeadlineReminderService` / `DeterministicDeadlineReminderService` — composes one aggregated guidance reminder per learner per UTC day (idempotent) via the existing `INotificationService` (which honours notification preferences and writes append-only logs); minor learners require a current guardian data-processing consent
+- [x] `INotificationLogRepository.HasLogForTypeOnDateAsync` — underpins idempotent reminder runs (at most one deadline reminder per learner per day)
+- [x] `Features/Notifications/` CQRS — `GetMyNotifications` query (owner-scoped history; recipient omitted from DTO), `TriggerDeadlineReminders` command (RBAC at boundary; append-only audit-logged run; window clamped 1..90, default 14); typed DTOs only
+- [x] `NotificationsController` — `GET history` (owner-scoped), `POST admin/run-deadline-reminders` (SupportAgent/Admin/SuperAdmin); `[Authorize]`, inputs validated, run audit-logged
+- [x] Reminders are guidance only — no official-portal claims; stub delivery providers only (no real email/SMS/WhatsApp; any future key via env only)
+- [x] Frontend: `notificationsApi` history/run wrappers, `NotificationHistoryPage` (list + empty/error states), admin "Run deadline reminders" action on `AdminReportingDashboardPage`, profile tile, routes in `App.tsx`
+- [x] Backend tests (reminders generated for due deadlines, none outside window, preferences honoured via `INotificationService`, minor consent suppression, idempotency no-double-send, admin trigger audit-logged + window clamp) and frontend tests (history renders, empty state, error state, admin trigger calls API)
+
+### Deferred (post-MVP)
+- [ ] Hosted background job / cron to run reminders on a schedule (deferred — no external scheduler in this phase)
+- [ ] Real email/SMS/WhatsApp delivery provider behind the existing interfaces (key via environment only) (deferred)
+- [ ] Per-deadline (not per-day) reminder cadence and configurable lead-time tiers (deferred)
+
+---
+
 ## Notes
 
 - Phases may overlap or be reprioritised based on learner feedback and business needs

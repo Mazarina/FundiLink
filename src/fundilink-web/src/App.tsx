@@ -17,6 +17,7 @@ import DocumentsPage from './pages/DocumentsPage'
 import AdminLearnersPage from './pages/AdminLearnersPage'
 import AdminLearnerDetailPage from './pages/AdminLearnerDetailPage'
 import NotificationPreferencesPage from './pages/NotificationPreferencesPage'
+import NotificationHistoryPage from './pages/NotificationHistoryPage'
 import AuditLogPage from './pages/AuditLogPage'
 import BursariesPage from './pages/BursariesPage'
 import BursaryDetailPage from './pages/BursaryDetailPage'
@@ -66,6 +67,7 @@ function App() {
           <Route path="/guardian" element={<ProtectedRoute><GuardianViewPage /></ProtectedRoute>} />
           <Route path="/data-rights" element={<ProtectedRoute><DataRightsPage /></ProtectedRoute>} />
           <Route path="/notifications/preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
+          <Route path="/notifications/history" element={<ProtectedRoute><NotificationHistoryPage /></ProtectedRoute>} />
           <Route path="/admin/learners" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnersPage /></ProtectedRoute>} />
           <Route path="/admin/learners/:id" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnerDetailPage /></ProtectedRoute>} />
           <Route path="/admin/audit" element={<ProtectedRoute roles={['SuperAdmin']}><AuditLogPage /></ProtectedRoute>} />

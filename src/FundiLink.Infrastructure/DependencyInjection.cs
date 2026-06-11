@@ -55,6 +55,8 @@ public static class DependencyInjection
         services.AddScoped<IWhatsAppService, StubWhatsAppService>();
         services.AddScoped<ISmsService, StubSmsService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IDeadlineQueryRepository, DeadlineQueryRepository>();
+        services.AddScoped<IDeadlineReminderService, DeterministicDeadlineReminderService>();
         services.AddScoped<IBursaryRepository, BursaryRepository>();
         services.AddScoped<IBursaryApplicationRepository, BursaryApplicationRepository>();
 

@@ -50,6 +50,9 @@ public record RequiredSubjectRequest(string SubjectName, int MinimumPercentage);
 
 public record UpdateNotificationPreferencesRequest(bool EmailEnabled, bool WhatsAppEnabled, bool SmsEnabled);
 
+// Admin-triggered deadline reminder pass. WindowDays is clamped server-side (1..90, default 14).
+public record RunDeadlineRemindersRequest(int WindowDays);
+
 public record CreateBursaryApplicationRequest(Guid BursaryId, BursaryApplicationStatus Status, string? Notes, DateTime? DeadlineDate);
 public record UpdateBursaryApplicationStatusRequest(BursaryApplicationStatus NewStatus, string? Notes);
 public record CreateBursaryRequest(

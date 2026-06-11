@@ -204,6 +204,33 @@ read learner sensitive fields**:
 
 ---
 
+## Notifications & Deadline Reminders (Phase 12)
+
+Phase 12 activates deterministic, in-process **deadline-reminder generation** plus learner
+**notification history** and an admin-triggered **reminder run**. It adds **no new PII exposure**:
+
+- **Guidance only.** Reminders help learners prepare and organise; FundiLink is **not** an official
+  admissions or funding portal. Reminder copy explicitly states submissions happen on the official
+  institution/funder portal.
+- **Preferences and consent respected.** Reminders are dispatched through the existing
+  `INotificationService`, which only contacts channels the learner has opted into (email on by
+  default; WhatsApp/SMS opt-in). For **minor learners** (under 18), a **current guardian
+  data-processing consent** is required before any reminder is sent; otherwise the learner is skipped.
+- **Data minimisation.** The deadline query returns only the minimal fields needed to compose a
+  reminder (learner id, opportunity name, deadline date) for **active (non-deleted) learners** only.
+  The learner notification-history DTO surfaces only existing log fields and **deliberately omits the
+  recipient address**.
+- **Idempotency.** At most **one deadline reminder per learner per UTC day**, so repeated runs do not
+  double-send.
+- **Stub delivery only.** No real email/SMS/WhatsApp provider is integrated; a real provider may be
+  wired later behind the same interfaces, with any key supplied via environment variables only.
+- **Auditability & RBAC.** The admin-triggered run is **RBAC-gated** (SupportAgent/Admin/SuperAdmin)
+  and writes an **append-only audit entry** (`TriggerDeadlineReminders`) recording actor, window, and
+  aggregate sent/skipped counts. Every channel attempt continues to write an append-only
+  `NotificationLog` entry as before. No external scheduler is wired in this phase.
+
+---
+
 ## Privacy-by-Design Checklist (for developers)
 - [ ] Is there a consent notice for new data collection?
 - [ ] Is the data minimised to what is needed?

@@ -228,13 +228,32 @@ Soft-delete a document.
 
 ## Notification Endpoints
 
-### GET /api/v1/notifications
-Get the learner's notifications.
-- Auth: Student
+### GET /api/v1/notifications/preferences
+Get the learner's notification channel preferences (email/WhatsApp/SMS).
+- Auth: Student (owner-scoped)
 
-### PUT /api/v1/notifications/{id}/read
-Mark notification as read.
-- Auth: Student
+### PUT /api/v1/notifications/preferences
+Update the learner's notification channel preferences.
+- Auth: Student (owner-scoped)
+- Request body: `{ "emailEnabled": bool, "whatsAppEnabled": bool, "smsEnabled": bool }`
+
+### GET /api/v1/notifications/history
+Owner-scoped notification history over the append-only `NotificationLog`.
+- Auth: Student (owner-scoped — resolved from the authenticated user id)
+- Response: array of `{ id, notificationType, channel, status, sentAt, errorMessage }`
+- Read-only. Surfaces no PII beyond the existing log fields; the recipient address is deliberately omitted from the DTO.
+
+### POST /api/v1/notifications/admin/run-deadline-reminders
+Admin/ops-triggered deadline-reminder pass (for operations and testing).
+- Auth: SupportAgent, Admin, SuperAdmin (RBAC at boundary)
+- Request body: `{ "windowDays": number }` — clamped server-side to 1..90 (default 14 if out of range)
+- Response: `{ learnersWithUpcomingDeadlines, remindersSent, remindersSkippedAlreadySent }` (aggregate counts only)
+- Deterministic, in-process generation over upcoming programme/bursary application deadlines for active
+  learners. Honours each learner's notification preferences (via `INotificationService`) and, for minor
+  learners, requires a current guardian data-processing consent. Idempotent: at most one deadline reminder
+  per learner per UTC day. Reminders are guidance only — FundiLink is NOT an official admissions/funding
+  portal. Stub delivery providers only (no real email/SMS/WhatsApp; any future key via environment only).
+  Each run is append-only audit-logged (`TriggerDeadlineReminders`). No external scheduler is wired in this phase.
 
 ---
 

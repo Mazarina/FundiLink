@@ -4,11 +4,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import AdminReportingDashboardPage from './AdminReportingDashboardPage'
 import AdminAuditActivityPage from './AdminAuditActivityPage'
 import * as api from '../features/reporting/reportingApi'
+import * as notificationsApi from '../features/notifications/notificationsApi'
 import type { OperationsDashboard, PopiaOperationsSummary } from '../types'
 
 vi.mock('../features/reporting/reportingApi')
+vi.mock('../features/notifications/notificationsApi')
 
 const mockedApi = vi.mocked(api)
+const mockedNotificationsApi = vi.mocked(notificationsApi)
 
 function renderWithRouter(ui: React.ReactElement) {
   return render(<MemoryRouter>{ui}</MemoryRouter>)
@@ -56,6 +59,24 @@ describe('AdminReportingDashboardPage', () => {
     expect(screen.getByText('Pending erasure requests')).toBeTruthy()
     const erasureLink = screen.getByText('Pending erasure requests').closest('a')
     expect(erasureLink?.getAttribute('href')).toBe('/admin/erasure-requests')
+  })
+
+  it('runs the deadline reminder pass via the API and shows the result', async () => {
+    mockedApi.getOperationsDashboard.mockResolvedValue(dashboard)
+    mockedApi.getPopiaOperationsSummary.mockResolvedValue(popia)
+    mockedNotificationsApi.runDeadlineReminders.mockResolvedValue({
+      learnersWithUpcomingDeadlines: 5,
+      remindersSent: 4,
+      remindersSkippedAlreadySent: 1,
+    })
+
+    renderWithRouter(<AdminReportingDashboardPage />)
+
+    const button = await screen.findByText('Run deadline reminders')
+    fireEvent.click(button)
+
+    await waitFor(() => expect(mockedNotificationsApi.runDeadlineReminders).toHaveBeenCalledWith(14))
+    expect(await screen.findByText(/4 sent, 1 skipped/)).toBeTruthy()
   })
 })
 

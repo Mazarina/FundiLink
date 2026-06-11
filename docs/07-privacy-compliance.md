@@ -106,6 +106,44 @@ Profile sections the learner hasn't filled in are not required unless needed for
 
 ---
 
+## Guardian Consent & Co-Access Data Flows (Phase 9)
+
+FundiLink processes minors' data (learners under 18). Phase 9 makes guardian consent explicit,
+recorded, and auditable, and provides a consent-gated, minimised guardian co-access view.
+
+### Data collected
+- **GuardianConsent** (append-only): learner id, consent type (DataProcessing, GuardianCoAccess,
+  SharingWithInstitutions), scope (ProfileBasic, ProfileAndApplications), status (Granted/Revoked),
+  recorded guardian name and contact, timestamp. POPIA-minimal — no sensitive learner detail.
+- **GuardianLink**: learner id, guardian's authenticated user id, guardian name/contact.
+
+### Lawfulness & consent
+- Guardian consent is required before sensitive processing/sharing where the learner is a minor.
+  Recording or revoking consent is only permitted for learners under 18.
+- Consent is captured at the learner's request, recorded immutably, and may be withdrawn at any
+  time (POPIA right to withdraw). A revocation is appended as a new record; grants are never
+  mutated or deleted, preserving a full auditable consent history.
+
+### Data minimisation (guardian co-access)
+- A guardian sees only what consent permits. The co-access view is gated by BOTH a guardian link
+  and a current `GuardianCoAccess` consent, and is limited to the consented scope:
+  - `ProfileBasic`: name, grade, school, province, profile completeness.
+  - `ProfileAndApplications`: the above plus application status summaries (status only).
+- The guardian view NEVER exposes the learner's ID number, uploaded documents, notes, or contact
+  details. Access is read-only — guardians cannot edit or download.
+
+### Auditability
+- All consent grants, revocations, guardian links, and every guardian co-access read are written
+  to the append-only audit log (actor, action, target, timestamp). Audit records are never updated
+  or deleted.
+
+### Processors / third parties
+- No external identity-verification or e-signature provider is integrated in this phase. Consent
+  checks are deterministic and local (behind `IConsentCheckService`). A real provider may be wired
+  later behind the same interface, with any key supplied via environment variables only.
+
+---
+
 ## Privacy-by-Design Checklist (for developers)
 - [ ] Is there a consent notice for new data collection?
 - [ ] Is the data minimised to what is needed?

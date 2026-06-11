@@ -122,6 +122,18 @@ export default function ProfilePage() {
             <div className="font-semibold text-gray-800 text-sm">Ask FundiLink</div>
             <div className="text-xs text-gray-500 mt-1">Get guidance from your profile</div>
           </Link>
+          <Link to="/consent"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">🛡️</div>
+            <div className="font-semibold text-gray-800 text-sm">Guardian Consent</div>
+            <div className="text-xs text-gray-500 mt-1">Manage consent &amp; privacy</div>
+          </Link>
+          <Link to="/guardian"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">👪</div>
+            <div className="font-semibold text-gray-800 text-sm">Guardian Co-Access</div>
+            <div className="text-xs text-gray-500 mt-1">View a linked learner</div>
+          </Link>
           <Link to="/notifications/preferences"
             className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
             <div className="text-3xl mb-2">🔔</div>

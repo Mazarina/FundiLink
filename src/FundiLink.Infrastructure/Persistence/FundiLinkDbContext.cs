@@ -29,6 +29,8 @@ public class FundiLinkDbContext : IdentityDbContext, IApplicationDbContext
     public DbSet<AccommodationInterest> AccommodationInterests => Set<AccommodationInterest>();
     public DbSet<CareerOpportunity> CareerOpportunities => Set<CareerOpportunity>();
     public DbSet<CareerInterest> CareerInterests => Set<CareerInterest>();
+    public DbSet<GuardianConsent> GuardianConsents => Set<GuardianConsent>();
+    public DbSet<GuardianLink> GuardianLinks => Set<GuardianLink>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

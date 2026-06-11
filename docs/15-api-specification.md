@@ -379,6 +379,46 @@ Get aggregate school dashboard metrics.
 
 ---
 
+## Consent & Guardian Co-Access Endpoints (Phase 9)
+
+All endpoints require `[Authorize]`. Learner consent endpoints are owner-scoped (the learner
+is resolved from the authenticated user). Guardian endpoints are gated by a guardian link AND a
+current `GuardianCoAccess` consent, and return only the consented, minimised scope. All consent
+grants/revocations, guardian links, and guardian access are append-only audit-logged. No real
+identity-verification / e-signature provider integration — deterministic stub behind the interface.
+
+### GET /api/v1/consent/state
+Effective consent state for the caller's own learner profile (per consent type).
+- Auth: authenticated learner
+- Response: `{ isMinor, guardianConsentRequired, consents: [{ consentType, isGranted, scope, guardianName, recordedAt }], disclaimer }`
+
+### GET /api/v1/consent/history
+Full append-only consent history for the caller, newest first.
+- Auth: authenticated learner
+
+### POST /api/v1/consent
+Record (grant) a guardian consent. Only allowed for learners under 18.
+- Body: `{ consentType, scope, guardianName, guardianContact }`
+
+### POST /api/v1/consent/revoke
+Record a revocation of a previously granted consent (right to withdraw). Appended as a new record.
+- Body: `{ consentType }`
+
+### POST /api/v1/consent/guardian-links
+Link a guardian (existing user) to the caller's own minor learner profile (idempotent).
+- Body: `{ guardianUserId, guardianName, guardianContact }`
+
+### GET /api/v1/consent/guardian/learners
+List the learners the caller (as a guardian) is linked to, with current consent state.
+- Auth: authenticated guardian
+
+### GET /api/v1/consent/guardian/learners/{learnerId}
+Minimised, read-only co-access view of a linked learner. 403 if not linked or no current consent.
+Response is limited to the consented scope; never the ID number, documents, or learner contact details.
+- Auth: authenticated guardian (consent-gated)
+
+---
+
 ## Health
 
 ### GET /health

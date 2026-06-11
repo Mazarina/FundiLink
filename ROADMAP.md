@@ -186,6 +186,28 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
+## Phase 9: Guardian Consent & Co-Access (MVP delivered)
+**Status:** MVP delivered
+**Goal:** Make guardian consent explicit, recorded, and auditable for minor learners (POPIA), and give consented guardians a minimised read-only co-access view.
+
+### Deliverables
+- [x] `GuardianConsent` entity — append-only consent history (grant + revoke records), recorded guardian identity, consent type/scope/timestamps; never mutated or deleted
+- [x] `GuardianLink` entity — links a guardian user to a minor learner; the link alone grants nothing
+- [x] `IConsentCheckService` — deterministic consent check from the latest record; no external identity-verification / e-signature provider (stub behind interface; future key via env only)
+- [x] `Features/Consent/` CQRS — record consent, revoke consent (right to withdraw), consent state, consent history, link guardian, guardian-scoped read view, list linked learners (typed DTOs only)
+- [x] Guardian co-access is consent-gated and data-minimised — a guardian sees only the consented scope (basic profile, or profile + application summaries); never the ID number, documents, or learner contact details
+- [x] `ConsentController` under `api/v1/consent`, `[Authorize]`, owner/guardian-scoped, input validation at boundary
+- [x] All consent grants/revocations, guardian links, and guardian access are append-only audit-logged
+- [x] Frontend: `src/features/consent/` api wrappers + consent banner/badges, `ConsentPage` (manage consent), `GuardianViewPage` (minimised read-only view), profile tiles, ProtectedRoute wiring
+- [x] Backend unit tests (record, revoke updates state, revoke without consent rejected, guardian access blocked without link/consent, scoped minimised view with consent, audit-log written) and frontend page tests (renders state, grant action triggers API, guardian view renders minimised data)
+
+### Deferred (post-MVP)
+- [ ] Real identity-verification / e-signature provider integration (behind `IConsentCheckService`; API key via environment only) (deferred)
+- [ ] Guardian self-service account onboarding / invitation flow (deferred)
+- [ ] Configurable, granular field-level co-access scopes (deferred)
+
+---
+
 ## Notes
 
 - Phases may overlap or be reprioritised based on learner feedback and business needs

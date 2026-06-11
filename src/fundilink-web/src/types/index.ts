@@ -293,3 +293,58 @@ export interface AssistantResponse {
   guidanceOnly: boolean
   disclaimer: string
 }
+
+// Guardian consent & co-access (Phase 9)
+export type ConsentType = 'DataProcessing' | 'GuardianCoAccess' | 'SharingWithInstitutions'
+export type ConsentScope = 'ProfileBasic' | 'ProfileAndApplications'
+export type ConsentStatus = 'Granted' | 'Revoked'
+
+export interface ConsentTypeState {
+  consentType: ConsentType
+  isGranted: boolean
+  scope: ConsentScope | null
+  guardianName: string | null
+  recordedAt: string | null
+}
+
+export interface ConsentState {
+  isMinor: boolean
+  guardianConsentRequired: boolean
+  consents: ConsentTypeState[]
+  disclaimer: string
+}
+
+export interface ConsentHistoryEntry {
+  id: string
+  consentType: ConsentType
+  scope: ConsentScope
+  status: ConsentStatus
+  guardianName: string
+  recordedAt: string
+}
+
+export interface LinkedLearner {
+  learnerId: string
+  firstName: string
+  surname: string
+  hasCurrentConsent: boolean
+}
+
+export interface GuardianApplicationSummary {
+  programmeOrBursaryName: string
+  kind: string
+  status: string
+}
+
+export interface GuardianView {
+  learnerId: string
+  firstName: string
+  surname: string
+  gradeLevel: GradeLevel
+  schoolName: string
+  province: string
+  profileCompleteness: number
+  scope: ConsentScope
+  applications: GuardianApplicationSummary[]
+  disclaimer: string
+}

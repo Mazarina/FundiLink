@@ -71,6 +71,14 @@ public static class DependencyInjection
         services.AddScoped<ICareerRepository, CareerRepository>();
         services.AddScoped<ICareerInterestRepository, CareerInterestRepository>();
 
+        // Guardian consent & co-access (Phase 9). Append-only consent records and guardian
+        // links behind repositories. Consent checks are deterministic — no real identity-
+        // verification / e-signature provider integration in this phase. A real provider may
+        // be wired later behind IConsentCheckService (key via env only).
+        services.AddScoped<IGuardianConsentRepository, GuardianConsentRepository>();
+        services.AddScoped<IGuardianLinkRepository, GuardianLinkRepository>();
+        services.AddScoped<IConsentCheckService, DeterministicConsentCheckService>();
+
         return services;
     }
 }

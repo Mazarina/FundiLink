@@ -84,3 +84,7 @@ public record TrackAccommodationInterestRequest(Guid AccommodationListingId, Opp
 public record UpdateAccommodationInterestStatusRequest(OpportunityInterestStatus NewStatus, string? Notes);
 public record TrackCareerInterestRequest(Guid CareerOpportunityId, OpportunityInterestStatus Status, string? Notes);
 public record UpdateCareerInterestStatusRequest(OpportunityInterestStatus NewStatus, string? Notes);
+
+public record RecordConsentRequest(ConsentType ConsentType, ConsentScope Scope, string GuardianName, string GuardianContact);
+public record RevokeConsentRequest(ConsentType ConsentType);
+public record LinkGuardianRequest(string GuardianUserId, string GuardianName, string GuardianContact);

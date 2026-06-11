@@ -27,6 +27,8 @@ import AccommodationPage from './pages/AccommodationPage'
 import AccommodationInterestsPage from './pages/AccommodationInterestsPage'
 import CareerPage from './pages/CareerPage'
 import CareerInterestsPage from './pages/CareerInterestsPage'
+import ConsentPage from './pages/ConsentPage'
+import GuardianViewPage from './pages/GuardianViewPage'
 
 const ADMIN_ROLES = ['Admin', 'SupportAgent', 'SuperAdmin']
 
@@ -56,6 +58,8 @@ function App() {
           <Route path="/accommodation/interests" element={<ProtectedRoute><AccommodationInterestsPage /></ProtectedRoute>} />
           <Route path="/career" element={<ProtectedRoute><CareerPage /></ProtectedRoute>} />
           <Route path="/career/interests" element={<ProtectedRoute><CareerInterestsPage /></ProtectedRoute>} />
+          <Route path="/consent" element={<ProtectedRoute><ConsentPage /></ProtectedRoute>} />
+          <Route path="/guardian" element={<ProtectedRoute><GuardianViewPage /></ProtectedRoute>} />
           <Route path="/notifications/preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
           <Route path="/admin/learners" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnersPage /></ProtectedRoute>} />
           <Route path="/admin/learners/:id" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnerDetailPage /></ProtectedRoute>} />

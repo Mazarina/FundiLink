@@ -419,6 +419,49 @@ Response is limited to the consented scope; never the ID number, documents, or l
 
 ---
 
+## Data Subject Rights (POPIA — export & erasure)
+
+Learner endpoints are owner-scoped (data resolved from the authenticated user id). Admin
+endpoints are RBAC-gated. Every export generation and every erasure request/approve/reject/
+fulfil action is append-only audit-logged. Erasure fulfilment anonymises/soft-deletes the
+learner's personal data while preserving append-only audit and consent records (POPIA proof-
+of-processing retention). No third-party storage/email/delivery integration in this phase.
+
+### GET /api/v1/data-rights/export
+Returns a typed, owner-scoped export of the caller's FundiLink data (profile, academic profile,
+applications, bursary applications, document metadata, accommodation/career interests, consent
+history) plus a POPIA disclaimer. Generated in-process.
+- Auth: authenticated learner (owner-scoped)
+
+### GET /api/v1/data-rights/erasure-requests
+Lists the caller's own erasure requests, newest first.
+- Auth: authenticated learner (owner-scoped)
+
+### POST /api/v1/data-rights/erasure-requests
+Raises an erasure request for the caller's own profile. Body: `{ reason?: string }`. Rejected if
+an open (Requested/Approved) request already exists. Returns `201` with `{ id }`.
+- Auth: authenticated learner (owner-scoped)
+
+### GET /api/v1/data-rights/admin/erasure-requests/pending
+Lists erasure requests awaiting review (status Requested), newest first.
+- Auth: SupportAgent, Admin, SuperAdmin
+
+### POST /api/v1/data-rights/admin/erasure-requests/{id}/approve
+Approves a pending request (does not delete data). Body: `{ note?: string }`. Returns `204`.
+- Auth: SupportAgent, Admin, SuperAdmin
+
+### POST /api/v1/data-rights/admin/erasure-requests/{id}/reject
+Rejects a pending request. Body: `{ note?: string }`. Returns `204`.
+- Auth: SupportAgent, Admin, SuperAdmin
+
+### POST /api/v1/data-rights/admin/erasure-requests/{id}/fulfil
+Fulfils the request — anonymises/soft-deletes the learner's personal data while preserving
+append-only audit and consent records — and marks it Fulfilled. Body: `{ note?: string }`.
+Returns `204`.
+- Auth: Admin, SuperAdmin
+
+---
+
 ## Health
 
 ### GET /health

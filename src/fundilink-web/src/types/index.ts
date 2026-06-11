@@ -348,3 +348,37 @@ export interface GuardianView {
   applications: GuardianApplicationSummary[]
   disclaimer: string
 }
+
+export type ErasureRequestStatus = 'Requested' | 'Approved' | 'Rejected' | 'Fulfilled'
+
+export interface ErasureRequest {
+  id: string
+  learnerId: string
+  status: ErasureRequestStatus
+  reason: string | null
+  requestedAt: string
+  reviewedAt: string | null
+  reviewNote: string | null
+  fulfilledAt: string | null
+}
+
+export interface DataExportProfile {
+  learnerId: string
+  firstName: string
+  surname: string
+  province: string
+  schoolName: string
+  profileCompleteness: number
+}
+
+export interface DataExport {
+  generatedAt: string
+  profile: DataExportProfile
+  applications: unknown[]
+  bursaryApplications: unknown[]
+  documents: unknown[]
+  accommodationInterests: unknown[]
+  careerInterests: unknown[]
+  consentHistory: unknown[]
+  disclaimer: string
+}

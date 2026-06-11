@@ -75,11 +75,14 @@ Profile sections the learner hasn't filled in are not required unless needed for
 ---
 
 ## Data Deletion (Right to Erasure)
-- Learners can request full account and data deletion
-- Request triggers a soft-delete, then queued physical deletion within 30 days
-- Deletion logged in audit trail
+- Learners can request erasure of their account and data from "My data & privacy" (implemented in Phase 10)
+- A request is raised by the learner (status Requested); deletion itself is a deliberate, audited admin action
+- An admin reviews the request (Approve / Reject) and, on fulfilment, the learner's personal data is anonymised/soft-deleted
+- Erasure fulfilment **preserves append-only audit and consent records** — these are POPIA-minimal and retained as legally required proof of lawful processing and consent; they do not contain sensitive personal payloads
 - Anonymised aggregate data (e.g., APS statistics) may be retained as it is not personal information
-- Learner notified when deletion is complete
+- All export generation and all erasure request/approve/reject/fulfil actions are recorded in the append-only audit log
+
+See "Data Subject Rights — Export & Erasure Data Flows (Phase 10)" below for detail.
 
 ---
 
@@ -141,6 +144,41 @@ recorded, and auditable, and provides a consent-gated, minimised guardian co-acc
 - No external identity-verification or e-signature provider is integrated in this phase. Consent
   checks are deterministic and local (behind `IConsentCheckService`). A real provider may be wired
   later behind the same interface, with any key supplied via environment variables only.
+
+---
+
+## Data Subject Rights — Export & Erasure Data Flows (Phase 10)
+
+Phase 10 implements the POPIA right of access (data export) and right to erasure.
+
+### Right of access — data export
+- A learner downloads a structured, typed export of their own FundiLink data (profile, academic
+  profile, applications, bursary applications, document metadata, accommodation/career interests,
+  consent history) from "My data & privacy".
+- The export is **owner-scoped** (resolved from the authenticated user id) and generated **in-process**
+  (typed DTO / JSON). No third-party storage, email, or delivery provider is used in this phase.
+- Each export generation is recorded in the append-only audit log (`ExportData`).
+
+### Right to erasure — request and fulfilment
+- The learner raises an erasure request (`ErasureRequest`, status Requested). Only one open request
+  is allowed at a time.
+- An admin reviews the request (RBAC: SupportAgent/Admin/SuperAdmin) and approves or rejects it.
+- Fulfilment (RBAC: Admin/SuperAdmin) invokes the deterministic `IErasureService`, which:
+  - **anonymises** the learner profile (redacts name, ID/passport, contact, school, guardian fields)
+    and soft-deletes it as a tombstone, and
+  - **removes** the learner's academic profile and subject results, application and bursary-application
+    tracking, document metadata, and accommodation/career interests.
+- The erasure service **never touches** the append-only audit (`AuditLogEntries`) or consent
+  (`GuardianConsents`) records. These are POPIA-minimal and retained as proof of lawful processing/
+  consent (the retention rule). The request is then marked Fulfilled.
+- Every request, approval, rejection, and fulfilment is recorded in the append-only audit log
+  (`RequestErasure`, `ApproveErasureRequest`, `RejectErasureRequest`, `FulfilErasureRequest`).
+
+### Processors / third parties
+- No external storage/email/delivery provider is integrated in this phase. The export is generated
+  in-process and erasure is a deterministic in-process service behind `IErasureService`. A real
+  delivery channel may be wired later behind the same interface, with any key supplied via
+  environment variables only.
 
 ---
 

@@ -29,6 +29,8 @@ import CareerPage from './pages/CareerPage'
 import CareerInterestsPage from './pages/CareerInterestsPage'
 import ConsentPage from './pages/ConsentPage'
 import GuardianViewPage from './pages/GuardianViewPage'
+import DataRightsPage from './pages/DataRightsPage'
+import AdminErasureQueuePage from './pages/AdminErasureQueuePage'
 
 const ADMIN_ROLES = ['Admin', 'SupportAgent', 'SuperAdmin']
 
@@ -60,10 +62,12 @@ function App() {
           <Route path="/career/interests" element={<ProtectedRoute><CareerInterestsPage /></ProtectedRoute>} />
           <Route path="/consent" element={<ProtectedRoute><ConsentPage /></ProtectedRoute>} />
           <Route path="/guardian" element={<ProtectedRoute><GuardianViewPage /></ProtectedRoute>} />
+          <Route path="/data-rights" element={<ProtectedRoute><DataRightsPage /></ProtectedRoute>} />
           <Route path="/notifications/preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
           <Route path="/admin/learners" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnersPage /></ProtectedRoute>} />
           <Route path="/admin/learners/:id" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminLearnerDetailPage /></ProtectedRoute>} />
           <Route path="/admin/audit" element={<ProtectedRoute roles={['SuperAdmin']}><AuditLogPage /></ProtectedRoute>} />
+          <Route path="/admin/erasure-requests" element={<ProtectedRoute roles={ADMIN_ROLES}><AdminErasureQueuePage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>

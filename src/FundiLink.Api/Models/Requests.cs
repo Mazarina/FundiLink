@@ -88,3 +88,7 @@ public record UpdateCareerInterestStatusRequest(OpportunityInterestStatus NewSta
 public record RecordConsentRequest(ConsentType ConsentType, ConsentScope Scope, string GuardianName, string GuardianContact);
 public record RevokeConsentRequest(ConsentType ConsentType);
 public record LinkGuardianRequest(string GuardianUserId, string GuardianName, string GuardianContact);
+
+// Data subject rights (Phase 10, POPIA)
+public record RequestErasureRequest(string? Reason);
+public record ReviewErasureRequestBody(string? Note);

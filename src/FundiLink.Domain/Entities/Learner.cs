@@ -118,6 +118,34 @@ public class Learner : BaseEntity
         MarkUpdated();
     }
 
+    /// <summary>
+    /// Anonymises the learner's personal information in fulfilment of a POPIA erasure
+    /// request and soft-deletes the profile. Identifying and contact fields are cleared
+    /// or replaced with non-identifying placeholders; the row is retained (soft-deleted)
+    /// as a tombstone so that append-only audit and consent records — which are
+    /// POPIA-minimal and required as proof of lawful processing — remain coherent.
+    /// This method never touches audit or consent logs.
+    /// </summary>
+    public void Anonymise()
+    {
+        FirstName = "Redacted";
+        Surname = "Redacted";
+        IdNumber = null;
+        PassportNumber = null;
+        Gender = null;
+        HomeLanguage = null;
+        MobileNumber = "REDACTED";
+        Municipality = string.Empty;
+        Suburb = string.Empty;
+        SchoolName = "REDACTED";
+        GuardianName = null;
+        GuardianPhone = null;
+        GuardianEmail = null;
+        ProfileCompleteness = 0;
+        MarkUpdated();
+        SoftDelete();
+    }
+
     public void RecalculateCompleteness()
     {
         int score = 20; // base for having an account

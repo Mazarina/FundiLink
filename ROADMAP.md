@@ -208,6 +208,27 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
+## Phase 10: Data Subject Rights — Export & Erasure (MVP delivered)
+**Status:** MVP delivered
+**Goal:** Implement the POPIA right of access (data export) and right to erasure (erasure request + audited admin fulfilment), with append-only retention of audit and consent records as proof of lawful processing.
+
+### Deliverables
+- [x] `ErasureRequest` entity — tracked status lifecycle (Requested → Approved/Rejected → Fulfilled), recorded requester/reviewer identity and timestamps; EF config, DbSet, migration `AddErasureRequests`
+- [x] `Learner.Anonymise()` — redacts personal/contact fields and soft-deletes the profile (tombstone) for erasure fulfilment
+- [x] `IErasureService` / `DeterministicErasureService` — deterministic in-process fulfilment that anonymises/soft-deletes personal data (profile, academic profile, applications, bursary applications, document metadata, interests) and NEVER touches append-only audit or consent records; no external storage/email/delivery provider (future delivery channel behind the same interface; key via env only)
+- [x] `Features/DataRights/` CQRS — export my data (typed owner-scoped DTO), request erasure, query my requests; admin: list pending, approve/reject (review), fulfil erasure (typed DTOs only)
+- [x] `DataRightsController` under `api/v1/data-rights` — learner endpoints owner-scoped; admin endpoints RBAC-gated (review SupportAgent/Admin/SuperAdmin; fulfil Admin/SuperAdmin), `[Authorize]`, input validation at boundary
+- [x] All export generation and all erasure request/approve/reject/fulfil actions are append-only audit-logged
+- [x] Frontend: `src/features/data-rights/` api wrappers, `DataRightsPage` (download export, request erasure, see request status), `AdminErasureQueuePage` (review/fulfil queue), profile tiles, ProtectedRoute/role-gated routes in `App.tsx`
+- [x] Backend tests (export returns owner-scoped data + audit, erasure request created + audit, duplicate-open request rejected, admin fulfil anonymises + marks fulfilled + audit, anonymise redacts/soft-deletes, erasure service preserves append-only audit/consent records) and frontend tests (renders request state, export triggers API, admin fulfil triggers API)
+
+### Deferred (post-MVP)
+- [ ] Real export delivery channel (secure download link / email) behind `IErasureService` (key via environment only) (deferred)
+- [ ] Configurable data-retention schedules and automated retention enforcement (deferred)
+- [ ] Learner-facing in-app rendering of the full export (currently downloaded as JSON) (deferred)
+
+---
+
 ## Notes
 
 - Phases may overlap or be reprioritised based on learner feedback and business needs

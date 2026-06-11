@@ -134,6 +134,12 @@ export default function ProfilePage() {
             <div className="font-semibold text-gray-800 text-sm">Guardian Co-Access</div>
             <div className="text-xs text-gray-500 mt-1">View a linked learner</div>
           </Link>
+          <Link to="/data-rights"
+            className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+            <div className="text-3xl mb-2">🔐</div>
+            <div className="font-semibold text-gray-800 text-sm">My data &amp; privacy</div>
+            <div className="text-xs text-gray-500 mt-1">Export your data or request erasure</div>
+          </Link>
           <Link to="/notifications/preferences"
             className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
             <div className="text-3xl mb-2">🔔</div>
@@ -146,6 +152,14 @@ export default function ProfilePage() {
               <div className="text-3xl mb-2">🛠️</div>
               <div className="font-semibold text-gray-800 text-sm">Admin Portal</div>
               <div className="text-xs text-gray-500 mt-1">Manage learners & documents</div>
+            </Link>
+          )}
+          {isStaff && (
+            <Link to="/admin/erasure-requests"
+              className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition text-center">
+              <div className="text-3xl mb-2">🗑️</div>
+              <div className="font-semibold text-gray-800 text-sm">Erasure Queue</div>
+              <div className="text-xs text-gray-500 mt-1">Review &amp; fulfil erasure requests</div>
             </Link>
           )}
         </div>

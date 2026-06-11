@@ -79,6 +79,14 @@ public static class DependencyInjection
         services.AddScoped<IGuardianLinkRepository, GuardianLinkRepository>();
         services.AddScoped<IConsentCheckService, DeterministicConsentCheckService>();
 
+        // Data subject rights — export & erasure (Phase 10, POPIA). Export is generated
+        // in-process (typed DTO); erasure fulfilment is a deterministic in-process service
+        // that anonymises/soft-deletes personal data while preserving append-only audit and
+        // consent records. No third-party storage/email/delivery integration in this phase;
+        // a real delivery channel may be wired later behind IErasureService (key via env only).
+        services.AddScoped<IErasureRequestRepository, ErasureRequestRepository>();
+        services.AddScoped<IErasureService, DeterministicErasureService>();
+
         return services;
     }
 }

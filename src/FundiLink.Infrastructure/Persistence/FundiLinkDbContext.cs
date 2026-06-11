@@ -31,6 +31,7 @@ public class FundiLinkDbContext : IdentityDbContext, IApplicationDbContext
     public DbSet<CareerInterest> CareerInterests => Set<CareerInterest>();
     public DbSet<GuardianConsent> GuardianConsents => Set<GuardianConsent>();
     public DbSet<GuardianLink> GuardianLinks => Set<GuardianLink>();
+    public DbSet<ErasureRequest> ErasureRequests => Set<ErasureRequest>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

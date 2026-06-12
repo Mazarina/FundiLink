@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getBursaries } from '../features/bursaries/bursariesApi'
 import { BursaryDisclaimerBanner } from '../features/bursaries/BursaryDisclaimerBanner'
 import type { Bursary, BursaryFundingType } from '../types'
+import { humanizeEnum } from '../utils/format'
 
 const FUNDING_TYPES: BursaryFundingType[] = ['FullCost', 'TuitionOnly', 'PartialTuition', 'Stipend', 'Accommodation']
 
@@ -61,7 +62,7 @@ export default function BursariesPage() {
           >
             <option value="">All funding types</option>
             {FUNDING_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>{humanizeEnum(t)}</option>
             ))}
           </select>
           <button onClick={load} className="bg-brand-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90">
@@ -85,7 +86,7 @@ export default function BursariesPage() {
                 <p className="text-xs text-gray-500">{b.providerName}</p>
                 <h3 className="font-semibold text-gray-800">{b.name}</h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  {b.fundingType}{b.minimumAps != null ? ` · Min APS ${b.minimumAps}` : ''}
+                  {humanizeEnum(b.fundingType)}{b.minimumAps != null ? ` · Min APS ${b.minimumAps}` : ''}
                 </p>
               </Link>
             ))}

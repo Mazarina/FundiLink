@@ -6,6 +6,7 @@ import {
 } from '../features/accommodation/accommodationApi'
 import { AccommodationDisclaimerBanner } from '../features/accommodation/AccommodationDisclaimerBanner'
 import type { AccommodationListing, AccommodationType } from '../types'
+import { humanizeEnum } from '../utils/format'
 
 const ACCOMMODATION_TYPES: AccommodationType[] = [
   'ResidenceOnCampus',
@@ -77,7 +78,7 @@ export default function AccommodationPage() {
           >
             <option value="">All types</option>
             {ACCOMMODATION_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>{humanizeEnum(t)}</option>
             ))}
           </select>
           <button onClick={load} className="bg-brand-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90">
@@ -100,7 +101,7 @@ export default function AccommodationPage() {
                 <p className="text-xs text-gray-500">{l.providerName}</p>
                 <h3 className="font-semibold text-gray-800">{l.name}</h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  {l.accommodationType} · {l.city}, {l.province}
+                  {humanizeEnum(l.accommodationType)} · {l.city}, {l.province}
                   {l.nearInstitution ? ` · near ${l.nearInstitution}` : ''}
                 </p>
                 <button

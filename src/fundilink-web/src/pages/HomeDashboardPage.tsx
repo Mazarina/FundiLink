@@ -8,6 +8,14 @@ const KIND_LABELS: Record<string, string> = {
   BursaryApplication: 'Bursary',
 }
 
+const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
+  DeadlineReminder: 'Deadline reminder',
+  ApplicationStatusChange: 'Application status update',
+  DocumentVerificationResult: 'Document verification',
+  RegistrationWelcome: 'Welcome',
+  BursaryStatusChange: 'Bursary status update',
+}
+
 function SummaryCard({
   title,
   to,
@@ -160,7 +168,7 @@ export default function HomeDashboardPage() {
             <ul className="space-y-1">
               {summary.recentNotifications.map((n) => (
                 <li key={n.id} className="flex justify-between">
-                  <span>{n.notificationType}</span>
+                  <span>{NOTIFICATION_TYPE_LABELS[n.notificationType] ?? n.notificationType}</span>
                   <span className="text-gray-500">{new Date(n.sentAt).toLocaleDateString()}</span>
                 </li>
               ))}

@@ -3,6 +3,7 @@ import { getMyDocuments, uploadDocument, deleteDocument, downloadDocument } from
 import { DocumentStatusBadge } from '../features/documents/DocumentStatusBadge'
 import { DocumentUploadForm } from '../features/documents/DocumentUploadForm'
 import type { LearnerDocument, DocumentType } from '../types'
+import { humanizeEnum } from '../utils/format'
 
 export default function DocumentsPage() {
   const [docs, setDocs] = useState<LearnerDocument[]>([])
@@ -42,7 +43,7 @@ export default function DocumentsPage() {
               <div key={doc.id} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
                 <div>
                   <div className="text-sm font-medium text-gray-800">{doc.fileName}</div>
-                  <div className="text-xs text-gray-500">{doc.documentType.replace(/([A-Z])/g, ' $1').trim()}</div>
+                  <div className="text-xs text-gray-500">{humanizeEnum(doc.documentType)}</div>
                   {doc.rejectionReason && <div className="text-xs text-red-600 mt-1">Rejected: {doc.rejectionReason}</div>}
                 </div>
                 <div className="flex items-center gap-2">

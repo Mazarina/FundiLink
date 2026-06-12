@@ -231,6 +231,30 @@ Phase 12 activates deterministic, in-process **deadline-reminder generation** pl
 
 ---
 
+## Learner Home Dashboard & Activity Summary (Phase 13)
+
+Phase 13 adds an **owner-scoped, read-only** learner home dashboard (`GET /api/v1/home/summary`)
+that composes an at-a-glance summary from the learner's **own existing data only**.
+
+- **Owner-scoped.** The learner is resolved from the authenticated user id; every underlying read
+  is filtered to that learner's id. There is no new way to read another learner's data and no new
+  cross-learner surface. The Phase 12 deadline query gained an owner-scoped variant
+  (`GetUpcomingDeadlinesForLearnerAsync`) used here.
+- **Data minimisation.** The response is aggregate/derived figures plus minimal fields the learner
+  already owns (profile completeness, application/bursary status counts, pending required-document
+  count, upcoming deadline name/date, recent notification type/channel/status/date). **No new PII
+  surface** is introduced beyond fields already exposed by existing owner-scoped endpoints; no ID
+  number, recipient address, or document contents are returned.
+- **Read-only / no new audit surface.** The dashboard performs no writes and introduces no new
+  per-learner audit surface — it follows the same access pattern the learner already uses per
+  feature.
+- **Guidance only.** The dashboard is framed as preparation/tracking guidance; it makes no
+  official admissions/funding-portal claims.
+- **Processors / third parties.** None. No new third-party integration; any future provider goes
+  behind an interface with keys supplied via environment variables only.
+
+---
+
 ## Privacy-by-Design Checklist (for developers)
 - [ ] Is there a consent notice for new data collection?
 - [ ] Is the data minimised to what is needed?

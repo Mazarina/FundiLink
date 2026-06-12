@@ -60,4 +60,45 @@ public class DeadlineQueryRepository : IDeadlineQueryRepository
 
         return programmeDeadlines.Concat(bursaryDeadlines).ToList();
     }
+
+    public async Task<IReadOnlyList<UpcomingDeadline>> GetUpcomingDeadlinesForLearnerAsync(
+        Guid learnerId, DateTime fromInclusive, DateTime toInclusive, CancellationToken ct)
+    {
+        var programmeDeadlines = await _db.LearnerApplications
+            .Where(a => a.DeletedAt == null
+                        && a.LearnerId == learnerId
+                        && a.DeadlineDate != null
+                        && a.DeadlineDate >= fromInclusive
+                        && a.DeadlineDate <= toInclusive)
+            .Join(_db.Programmes,
+                a => a.ProgrammeId,
+                p => p.Id,
+                (a, p) => new UpcomingDeadline(
+                    a.LearnerId,
+                    DeadlineKind.ProgrammeApplication,
+                    p.Name,
+                    a.DeadlineDate!.Value))
+            .ToListAsync(ct);
+
+        var bursaryDeadlines = await _db.BursaryApplications
+            .Where(a => a.DeletedAt == null
+                        && a.LearnerId == learnerId
+                        && a.DeadlineDate != null
+                        && a.DeadlineDate >= fromInclusive
+                        && a.DeadlineDate <= toInclusive)
+            .Join(_db.Bursaries,
+                a => a.BursaryId,
+                b => b.Id,
+                (a, b) => new UpcomingDeadline(
+                    a.LearnerId,
+                    DeadlineKind.BursaryApplication,
+                    b.Name,
+                    a.DeadlineDate!.Value))
+            .ToListAsync(ct);
+
+        return programmeDeadlines
+            .Concat(bursaryDeadlines)
+            .OrderBy(d => d.DeadlineDate)
+            .ToList();
+    }
 }

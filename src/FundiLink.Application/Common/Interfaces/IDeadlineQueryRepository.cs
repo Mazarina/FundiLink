@@ -16,4 +16,12 @@ public interface IDeadlineQueryRepository
     /// </summary>
     Task<IReadOnlyList<UpcomingDeadline>> GetUpcomingDeadlinesAsync(
         DateTime fromInclusive, DateTime toInclusive, CancellationToken ct);
+
+    /// <summary>
+    /// Owner-scoped variant: returns upcoming deadlines for the single supplied learner whose
+    /// deadline date falls inside the window. Used by the learner home dashboard. Surfaces only
+    /// the learner's own deadlines — no cross-learner data.
+    /// </summary>
+    Task<IReadOnlyList<UpcomingDeadline>> GetUpcomingDeadlinesForLearnerAsync(
+        Guid learnerId, DateTime fromInclusive, DateTime toInclusive, CancellationToken ct);
 }

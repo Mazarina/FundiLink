@@ -180,6 +180,39 @@ export interface ReminderRunResult {
   remindersSkippedAlreadySent: number
 }
 
+// Phase 13 — owner-scoped learner home dashboard summary. Read-only composition of the
+// learner's own data; guidance only — FundiLink is not an official admissions/funding portal.
+export interface StatusCount {
+  status: string
+  count: number
+}
+
+export interface HomeUpcomingDeadline {
+  kind: string
+  opportunityName: string
+  deadlineDate: string
+}
+
+export interface HomeRecentNotification {
+  id: string
+  notificationType: NotificationType
+  channel: NotificationChannel
+  status: NotificationStatus
+  sentAt: string
+}
+
+export interface LearnerHomeSummary {
+  firstName: string
+  profileCompleteness: number
+  programmeApplicationCounts: StatusCount[]
+  programmeApplicationTotal: number
+  bursaryApplicationCounts: StatusCount[]
+  bursaryApplicationTotal: number
+  pendingDocumentCount: number
+  upcomingDeadlines: HomeUpcomingDeadline[]
+  recentNotifications: HomeRecentNotification[]
+}
+
 export type BursaryFundingType = 'FullCost' | 'TuitionOnly' | 'PartialTuition' | 'Stipend' | 'Accommodation'
 export type BursaryApplicationStatus = 'Researching' | 'Preparing' | 'Submitted' | 'Awarded' | 'Rejected'
 

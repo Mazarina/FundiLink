@@ -26,7 +26,7 @@ export default function LoginPage() {
       // Decode userId from token (simple base64 decode of payload)
       const payload = JSON.parse(atob(tokens.accessToken.split('.')[1]))
       signIn(tokens.accessToken, tokens.refreshToken, payload.sub, payload.email)
-      navigate('/profile')
+      navigate('/dashboard')
     } catch {
       setError('Invalid email or password.')
     } finally {

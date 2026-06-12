@@ -6,7 +6,7 @@ import { useAuth } from '../features/auth/AuthContext'
 
 export default function ProfilePage() {
   const { signOut, user } = useAuth()
-  const isStaff = user?.role === 'Admin' || user?.role === 'SupportAgent' || user?.role === 'SuperAdmin'
+  const isStaff = ['Admin', 'SupportAgent', 'SuperAdmin'].some((r) => user?.roles?.includes(r))
   const [profile, setProfile] = useState<LearnerProfile | null>(null)
   const [error, setError] = useState('')
 

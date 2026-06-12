@@ -11,6 +11,7 @@ export interface AuthUser {
   userId: string
   email: string
   role?: string
+  roles: string[]
 }
 
 export type DocumentType = 'IdDocument' | 'MatricCertificate' | 'AcademicResults' | 'ProofOfResidence' | 'GuardianConsent' | 'Other'

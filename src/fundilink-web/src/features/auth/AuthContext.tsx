@@ -12,14 +12,14 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
 
-function decodeRole(accessToken: string): string | undefined {
+function decodeRoles(accessToken: string): string[] {
   try {
     const payload = JSON.parse(atob(accessToken.split('.')[1]))
     const raw = payload.role ?? payload[ROLE_CLAIM]
-    if (Array.isArray(raw)) return raw[0]
-    return raw
+    if (Array.isArray(raw)) return raw
+    return raw ? [raw] : []
   } catch {
-    return undefined
+    return []
   }
 }
 
@@ -32,8 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback((accessToken: string, refreshToken: string, userId: string, email: string) => {
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
-    const role = decodeRole(accessToken)
-    const authUser: AuthUser = { userId, email, role }
+    const roles = decodeRoles(accessToken)
+    const authUser: AuthUser = { userId, email, role: roles[0], roles }
     localStorage.setItem('authUser', JSON.stringify(authUser))
     setUser(authUser)
   }, [])

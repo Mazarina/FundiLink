@@ -6,7 +6,7 @@ import { useAuth } from '../features/auth/AuthContext'
 import { gradeLevelLabel } from '../utils/format'
 
 export default function ProfilePage() {
-  const { signOut, user } = useAuth()
+  const { user } = useAuth()
   const isStaff = ['Admin', 'SupportAgent', 'SuperAdmin'].some((r) => user?.roles?.includes(r))
   const [profile, setProfile] = useState<LearnerProfile | null>(null)
   const [error, setError] = useState('')
@@ -32,12 +32,9 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-brand-light p-4">
       <div className="max-w-2xl mx-auto">
-        <header className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-brand-primary">My Profile</h1>
-            <p className="text-gray-500 text-sm">FundiLink by ZulTek</p>
-          </div>
-          <button onClick={signOut} className="text-sm text-gray-500 hover:text-red-500">Log out</button>
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-brand-primary">My Profile</h1>
+          <p className="text-gray-500 text-sm">FundiLink by ZulTek</p>
         </header>
 
         {/* Completeness */}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { searchLearners } from '../features/admin/adminApi'
 import type { LearnerSummary } from '../types'
+import { gradeLevelLabel } from '../utils/format'
 
 export default function AdminLearnersPage() {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ export default function AdminLearnersPage() {
               onClick={() => navigate(`/admin/learners/${l.id}`)}>
               <div>
                 <div className="font-semibold text-gray-800">{l.fullName}</div>
-                <div className="text-xs text-gray-500">{l.province} · {l.gradeLevel}</div>
+                <div className="text-xs text-gray-500">{l.province} · {gradeLevelLabel(l.gradeLevel)}</div>
               </div>
               <div className="text-sm text-gray-600">Profile: {l.profileCompleteness}%</div>
             </div>

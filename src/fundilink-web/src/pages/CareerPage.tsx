@@ -6,6 +6,7 @@ import {
 } from '../features/career/careerApi'
 import { CareerDisclaimerBanner } from '../features/career/CareerDisclaimerBanner'
 import type { CareerOpportunity, CareerOpportunityType } from '../types'
+import { humanizeEnum } from '../utils/format'
 
 const OPPORTUNITY_TYPES: CareerOpportunityType[] = [
   'Learnership',
@@ -77,7 +78,7 @@ export default function CareerPage() {
           >
             <option value="">All types</option>
             {OPPORTUNITY_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>{humanizeEnum(t)}</option>
             ))}
           </select>
           <button onClick={load} className="bg-brand-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90">
@@ -100,7 +101,7 @@ export default function CareerPage() {
                 <p className="text-xs text-gray-500">{o.providerName}</p>
                 <h3 className="font-semibold text-gray-800">{o.title}</h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  {o.opportunityType}
+                  {humanizeEnum(o.opportunityType)}
                   {o.fieldsOfInterest.length > 0 ? ` · ${o.fieldsOfInterest.join(', ')}` : ''}
                 </p>
                 {o.applicationCloseDate && (

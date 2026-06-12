@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import { getMyProfile } from '../features/profile/profileApi'
 import type { LearnerProfile } from '../types'
 import { useAuth } from '../features/auth/AuthContext'
+import { gradeLevelLabel } from '../utils/format'
 
 export default function ProfilePage() {
   const { signOut, user } = useAuth()
-  const isStaff = user?.role === 'Admin' || user?.role === 'SupportAgent' || user?.role === 'SuperAdmin'
+  const isStaff = ['Admin', 'SupportAgent', 'SuperAdmin'].some((r) => user?.roles?.includes(r))
   const [profile, setProfile] = useState<LearnerProfile | null>(null)
   const [error, setError] = useState('')
 
@@ -61,7 +62,7 @@ export default function ProfilePage() {
             <InfoRow label="Province" value={profile.province} />
             <InfoRow label="Mobile" value={profile.mobileNumber} />
             <InfoRow label="School" value={profile.schoolName} />
-            <InfoRow label="Grade" value={profile.gradeLevel} />
+            <InfoRow label="Grade" value={gradeLevelLabel(profile.gradeLevel)} />
             {profile.isMinor && <InfoRow label="Guardian" value={profile.guardianName ?? 'Not set'} />}
           </dl>
         </div>

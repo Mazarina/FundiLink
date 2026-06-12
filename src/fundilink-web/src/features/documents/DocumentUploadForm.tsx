@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { DocumentType } from '../../types'
+import { humanizeEnum } from '../../utils/format'
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
 const MAX_SIZE = 10 * 1024 * 1024
@@ -52,7 +53,7 @@ export function DocumentUploadForm({ onUpload }: Props) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Document type</label>
         <select value={docType} onChange={e => setDocType(e.target.value as DocumentType)}
           className="w-full border rounded-lg px-3 py-2 text-sm">
-          {DOCUMENT_TYPES.map(t => <option key={t} value={t}>{t.replace(/([A-Z])/g, ' $1').trim()}</option>)}
+          {DOCUMENT_TYPES.map(t => <option key={t} value={t}>{humanizeEnum(t)}</option>)}
         </select>
       </div>
       <div>

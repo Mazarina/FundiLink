@@ -507,6 +507,23 @@ Filtered, paged view over the append-only audit log. Query: `action?`, `actorRol
 
 ---
 
+## Home (Learner Dashboard)
+
+### GET /api/v1/home/summary
+Owner-scoped, read-only at-a-glance summary for the authenticated learner's home dashboard.
+Composed entirely from the learner's own existing data — no new PII surface. Returns
+`LearnerHomeSummaryDto`: `firstName`, `profileCompleteness` (0-100),
+`programmeApplicationCounts[]` and `bursaryApplicationCounts[]` (each `{ status, count }`),
+`programmeApplicationTotal`, `bursaryApplicationTotal`, `pendingDocumentCount` (required,
+unlinked checklist items across the learner's applications), `upcomingDeadlines[]`
+(`{ kind, opportunityName, deadlineDate }`, next 30 days), and `recentNotifications[]`
+(`{ id, notificationType, channel, status, sentAt }`, most recent first). Guidance only —
+FundiLink is not an official admissions or funding portal.
+- Auth: any authenticated learner (owner-scoped; resolves the learner from the token).
+- 404 when the user has no learner profile.
+
+---
+
 ## Health
 
 ### GET /health

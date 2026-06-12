@@ -270,6 +270,24 @@ FundiLink is built in phases. Each phase builds on the last. No phase begins unt
 
 ---
 
+## Phase 13: Learner Home Dashboard & Activity Summary (MVP delivered)
+**Status:** MVP delivered
+**Goal:** Give the learner a single owner-scoped, read-only landing dashboard that composes their at-a-glance picture from existing data — profile completeness, application/bursary counts by status, upcoming deadlines, pending documents, and recent notifications. Guidance only; no new PII surface, no new third-party integration.
+
+### Deliverables
+- [x] `IDeadlineQueryRepository.GetUpcomingDeadlinesForLearnerAsync` — owner-scoped variant of the Phase 12 deadline query (single learner, window-bounded, minimal fields)
+- [x] `Features/Home/` CQRS — `GetLearnerHomeSummaryQuery` / handler returning typed `LearnerHomeSummaryDto`; resolves the learner from the user id, reuses existing repositories, clamps the deadline window (1..90, default 30), limits recent notifications; throws `KeyNotFoundException` when no profile
+- [x] `HomeController` — `GET api/v1/home/summary` (owner-scoped, `[Authorize]`); typed DTO; no PII beyond the learner's own existing fields
+- [x] Read-only composition only — no new entities, migrations, or per-learner audit surface; same access pattern the learner already uses per feature
+- [x] Frontend: `features/home/homeApi`, `HomeDashboardPage` (summary cards + links into applications, bursaries, documents, deadlines, notification history; loading/empty/error states), `/dashboard` route, post-login landing
+- [x] Backend tests (composes counts from seeded data, new-learner zeros, deadline window respected, owner-scoping, missing profile throws, recent-notifications limit) and frontend tests (cards render, empty states, links navigate)
+
+### Deferred (post-MVP)
+- [ ] Personalised next-best-action recommendations on the dashboard (deferred)
+- [ ] Real-time/live refresh of summary figures (deferred)
+
+---
+
 ## Notes
 
 - Phases may overlap or be reprioritised based on learner feedback and business needs

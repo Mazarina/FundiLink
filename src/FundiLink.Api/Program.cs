@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using FundiLink.Api.Middleware;
 using FundiLink.Application;
 using FundiLink.Infrastructure;
@@ -12,7 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger with JWT support

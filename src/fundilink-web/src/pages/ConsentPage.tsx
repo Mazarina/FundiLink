@@ -104,7 +104,7 @@ export default function ConsentPage() {
                     aria-label={`Revoke ${c.consentType}`}
                     onClick={() => handleRevoke(c.consentType)}
                     className="text-sm text-red-600 hover:underline"
-                    disabled={!state.isMinor}
+                    disabled={c.consentType === 'GuardianCoAccess' && !state.isMinor}
                   >
                     Revoke
                   </button>
@@ -113,7 +113,7 @@ export default function ConsentPage() {
                     aria-label={`Grant ${c.consentType}`}
                     onClick={() => handleGrant(c.consentType)}
                     className="text-sm text-brand-primary hover:underline"
-                    disabled={!state.isMinor}
+                    disabled={c.consentType === 'GuardianCoAccess' && !state.isMinor}
                   >
                     Grant
                   </button>

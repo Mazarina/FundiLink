@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getLinkedLearners, getGuardianView } from '../features/consent/consentApi'
 import { ConsentDisclaimerBanner, ConsentBadge } from '../features/consent/ConsentDisclaimerBanner'
 import type { GuardianView, LinkedLearner } from '../types'
+import { gradeLevelLabel } from '../utils/format'
 
 export default function GuardianViewPage() {
   const [learners, setLearners] = useState<LinkedLearner[]>([])
@@ -68,7 +69,7 @@ export default function GuardianViewPage() {
           <div className="bg-white rounded-xl p-5 shadow-sm">
             <h2 className="font-semibold text-gray-800 mb-3">{view.firstName} {view.surname}</h2>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
-              <dt className="text-gray-500">Grade</dt><dd className="text-gray-800">{view.gradeLevel}</dd>
+              <dt className="text-gray-500">Grade</dt><dd className="text-gray-800">{gradeLevelLabel(view.gradeLevel)}</dd>
               <dt className="text-gray-500">School</dt><dd className="text-gray-800">{view.schoolName}</dd>
               <dt className="text-gray-500">Province</dt><dd className="text-gray-800">{view.province}</dd>
               <dt className="text-gray-500">Profile completeness</dt><dd className="text-gray-800">{view.profileCompleteness}%</dd>

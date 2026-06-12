@@ -16,6 +16,6 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
         builder.Property(d => d.RejectionReason).HasMaxLength(1000);
         builder.Property(d => d.Status).HasConversion<string>();
         builder.Property(d => d.DocumentType).HasConversion<string>();
-        builder.HasQueryFilter(d => !d.IsDeleted);
+        builder.HasQueryFilter(d => d.DeletedAt == null);
     }
 }

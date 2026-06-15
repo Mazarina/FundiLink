@@ -1,0 +1,75 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync application code to VPS
+        run: |
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '**/node_modules' \
+            --exclude '**/bin' \
+            --exclude '**/obj' \
+            --exclude '**/dist' \
+            -e "ssh -i ~/.ssh/id_ed25519" \
+            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_APP_DIR }}/"
+
+      - name: Write production environment file
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "mkdir -p /opt/fundilink/env && cat > /opt/fundilink/env/.env" <<EOF
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_ISSUER=${{ secrets.JWT_ISSUER }}
+          JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE }}
+          CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          API_BASE_URL=${{ secrets.API_BASE_URL }}
+          VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+          UPLOADS_PATH=${{ secrets.UPLOADS_PATH }}
+          ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}
+          EOF
+
+      - name: Build and start containers
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
+            set -e
+            cd ${{ secrets.VPS_APP_DIR }}
+            docker compose -f docker-compose.production.yml --env-file /opt/fundilink/env/.env build
+            docker compose -f docker-compose.production.yml --env-file /opt/fundilink/env/.env up -d
+          "
+          # Note: EF Core migrations are applied automatically by the API on
+          # startup (see Program.cs) — no separate migration step is needed.
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sf "${{ secrets.API_BASE_URL }}/health" > /dev/null; then
+              echo "API healthy"
+              exit 0
+            fi
+            echo "Waiting for API to become healthy ($i/10)..."
+            sleep 5
+          done
+          echo "API health check failed"
+          exit 1

@@ -18,6 +18,12 @@ appsettings.Local.json
 **/appsettings.Production.json
 **/appsettings.Staging.json
 **/appsettings.Local.json
+
+## Allow committed example/template env files (no real secrets)
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
 **/*.pfx
 **/*.p12
 **/*.key

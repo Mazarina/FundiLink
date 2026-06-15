@@ -46,4 +46,12 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await client.GetAsync("/health");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task HealthDbEndpoint_ReturnsOk()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.GetAsync("/health/db");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 }

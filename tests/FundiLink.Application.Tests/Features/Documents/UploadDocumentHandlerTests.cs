@@ -24,8 +24,8 @@ public class UploadDocumentHandlerTests
         "user-1", "Thabo", "Nkosi", new DateOnly(2005, 1, 1),
         "0712345678", "Gauteng", "School", "Gauteng", GradeLevel.Grade12, true, "v1");
 
-    private UploadDocumentCommand Command(string contentType, long size) =>
-        new("user-1", DocumentType.IdDocument, "file", contentType, size, new MemoryStream(new byte[1]));
+    private UploadDocumentCommand Command(string contentType, long size, string fileName = "file.pdf") =>
+        new("user-1", DocumentType.IdDocument, fileName, contentType, size, new MemoryStream(new byte[1]));
 
     [Fact]
     public async Task ValidPdf_Succeeds_DocumentPending()
@@ -34,7 +34,7 @@ public class UploadDocumentHandlerTests
         _documentRepository.Setup(x => x.AddAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .Callback<Document, CancellationToken>((d, _) => captured = d).Returns(Task.CompletedTask);
 
-        var result = await _sut.Handle(Command("application/pdf", 1000), CancellationToken.None);
+        var result = await _sut.Handle(Command("application/pdf", 1000, "file.pdf"), CancellationToken.None);
 
         result.Should().NotBeEmpty();
         captured.Should().NotBeNull();
@@ -45,28 +45,28 @@ public class UploadDocumentHandlerTests
     [Fact]
     public async Task InvalidContentType_Throws()
     {
-        var act = () => _sut.Handle(Command("text/plain", 1000), CancellationToken.None);
+        var act = () => _sut.Handle(Command("text/plain", 1000, "file.txt"), CancellationToken.None);
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
     public async Task FileOver10Mb_Throws()
     {
-        var act = () => _sut.Handle(Command("application/pdf", 11 * 1024 * 1024), CancellationToken.None);
+        var act = () => _sut.Handle(Command("application/pdf", 11 * 1024 * 1024, "file.pdf"), CancellationToken.None);
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
     public async Task ValidJpeg_Accepted()
     {
-        var result = await _sut.Handle(Command("image/jpeg", 5000), CancellationToken.None);
+        var result = await _sut.Handle(Command("image/jpeg", 5000, "file.jpg"), CancellationToken.None);
         result.Should().NotBeEmpty();
     }
 
     [Fact]
     public async Task ValidPng_Accepted()
     {
-        var result = await _sut.Handle(Command("image/png", 5000), CancellationToken.None);
+        var result = await _sut.Handle(Command("image/png", 5000, "file.png"), CancellationToken.None);
         result.Should().NotBeEmpty();
     }
 }

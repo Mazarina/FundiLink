@@ -50,7 +50,7 @@ jobs:
 
       - name: Install frontend deps
         working-directory: src/fundilink-web
-        run: npm ci
+        run: npm install
 
       - name: Lint frontend
         working-directory: src/fundilink-web

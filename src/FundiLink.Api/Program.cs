@@ -1,9 +1,14 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+using FundiLink.Api.Health;
 using FundiLink.Api.Middleware;
 using FundiLink.Application;
 using FundiLink.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -20,7 +25,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger with JWT support
+// Swagger with JWT support — only ever wired up in Development (see pipeline below).
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -52,9 +57,15 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// JWT Authentication
+// JWT Authentication — issuer, audience, lifetime and signing key are all validated.
+// The signing key and issuer/audience values are configuration-driven (env vars in
+// production); no unsigned or unvalidated tokens are accepted.
 var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"]
     ?? throw new InvalidOperationException("JwtSettings:SecretKey is not configured.");
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"]
+    ?? throw new InvalidOperationException("JwtSettings:Issuer is not configured.");
+var jwtAudience = builder.Configuration["JwtSettings:Audience"]
+    ?? throw new InvalidOperationException("JwtSettings:Audience is not configured.");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -69,8 +80,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
         ClockSkew = TimeSpan.Zero
     };
@@ -78,22 +89,66 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// CORS — allow local frontend in development
+// CORS — allowed origins come from configuration (Cors:AllowedOrigins, env var
+// Cors__AllowedOrigins, comma-separated). In Development we additionally allow the
+// local Vite dev server origins. Production must NOT fall back to localhost.
+var configuredOrigins = (builder.Configuration["Cors:AllowedOrigins"] ?? string.Empty)
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+var allowedOrigins = builder.Environment.IsDevelopment()
+    ? configuredOrigins.Concat(new[] { "http://localhost:5173", "http://localhost:3000" }).Distinct().ToArray()
+    : configuredOrigins;
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("LocalDev", policy =>
+    options.AddPolicy("AppCors", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
     });
 });
 
-// Health checks
-builder.Services.AddHealthChecks();
+// Rate limiting — a global fixed-window limiter protects all endpoints from abuse.
+// Limits are conservative defaults suitable for a small MVP deployment and can be
+// tuned via configuration without code changes.
+var rateLimitPermitLimit = builder.Configuration.GetValue("RateLimiting:PermitLimit", 100);
+var rateLimitWindowSeconds = builder.Configuration.GetValue("RateLimiting:WindowSeconds", 60);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimitPermitLimit,
+                Window = TimeSpan.FromSeconds(rateLimitWindowSeconds),
+                QueueLimit = 0
+            }));
+});
+
+// Health checks — liveness (/health) and readiness including database connectivity (/health/db)
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database");
+
+// Forward proxy headers from Nginx (X-Forwarded-For / X-Forwarded-Proto) so
+// UseHttpsRedirection and request scheme/IP reporting work correctly behind a reverse proxy.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // ── Pipeline ─────────────────────────────────────────────────────
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {
@@ -105,13 +160,28 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseHttpsRedirection();
-app.UseCors("LocalDev");
+app.UseRateLimiter();
+app.UseCors("AppCors");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/db");
+
+// Apply pending EF Core migrations on startup. This is idempotent and never
+// drops or recreates the schema — it only applies migrations that have not
+// yet been applied. Skipped for non-relational providers (e.g. the InMemory
+// provider used in integration tests).
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<FundiLink.Infrastructure.Persistence.FundiLinkDbContext>();
+    if (dbContext.Database.IsRelational())
+    {
+        await dbContext.Database.MigrateAsync();
+    }
+}
 
 // Seed roles on startup (idempotent)
 await FundiLink.Infrastructure.Persistence.Seed.RoleSeeder.SeedRolesAsync(app.Services);

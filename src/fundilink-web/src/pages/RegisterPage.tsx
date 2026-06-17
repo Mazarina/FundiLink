@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { register } from '../features/auth/authApi'
+import { AppFooter } from '../features/navigation/AppFooter'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -45,7 +46,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-brand-light flex items-center justify-center p-4">
+    <main className="min-h-screen bg-brand-light flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-sm p-8">
         <h1 className="text-2xl font-bold text-brand-primary mb-1">Create your profile</h1>
         <p className="text-gray-500 text-sm mb-6">FundiLink by ZulTek — One profile. Every opportunity.</p>
@@ -137,7 +138,11 @@ export default function RegisterPage() {
           <label className="flex items-start gap-3 cursor-pointer">
             <input name="consentAccepted" type="checkbox" required className="mt-0.5 h-4 w-4 rounded" />
             <span className="text-sm text-gray-700">
-              I agree to FundiLink's Privacy Policy and consent to my information being processed as described above.
+              I agree to FundiLink's{' '}
+              <Link to="/terms" target="_blank" className="text-brand-primary font-medium hover:underline">Terms of Service</Link>
+              {' '}and{' '}
+              <Link to="/privacy" target="_blank" className="text-brand-primary font-medium hover:underline">Privacy Policy</Link>
+              {' '}and consent to my information being processed as described above.
             </span>
           </label>
 
@@ -152,6 +157,7 @@ export default function RegisterPage() {
           <Link to="/login" className="text-brand-primary font-medium hover:underline">Log in</Link>
         </p>
       </div>
+      <AppFooter />
     </main>
   )
 }

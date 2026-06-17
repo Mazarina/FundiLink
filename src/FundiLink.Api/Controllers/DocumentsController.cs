@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FundiLink.Application.Features.Documents.Commands.DeleteDocument;
+using FundiLink.Application.Features.Documents.Commands.ReplaceDocument;
 using FundiLink.Application.Features.Documents.Commands.UploadDocument;
 using FundiLink.Application.Features.Documents.Queries.DownloadDocument;
 using FundiLink.Application.Features.Documents.Queries.GetMyDocuments;
@@ -57,6 +58,22 @@ public class DocumentsController : ControllerBase
         var result = await _mediator.Send(new DownloadDocumentQuery(id, UserId), cancellationToken);
         Response.Headers.ContentDisposition = $"attachment; filename=\"{result.FileName}\"";
         return File(result.Stream, result.ContentType);
+    }
+
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> Replace(Guid id, [FromForm] IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { detail = "A file is required." });
+
+        await using var stream = file.OpenReadStream();
+        await _mediator.Send(
+            new ReplaceDocumentCommand(id, UserId, file.FileName, file.ContentType, file.Length, stream),
+            cancellationToken);
+
+        return NoContent();
     }
 
     [HttpDelete("{id:guid}")]

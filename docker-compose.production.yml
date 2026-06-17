@@ -1,0 +1,88 @@
+# Production deployment for FundiLink by ZulTek.
+#
+# Expected to run from /opt/fundilink/app on the VPS, with an env file at
+# /opt/fundilink/env/.env (see .env.production.example for the required keys).
+#
+# Networking:
+#   - fundilink-db is NOT published to the host (internal network only).
+#   - fundilink-api and fundilink-frontend are published on local-only ports;
+#     a host Nginx + Certbot reverse-proxies HTTPS traffic to them
+#     (see DEPLOYMENT.md).
+
+services:
+  fundilink-db:
+    image: postgres:16-alpine
+    container_name: fundilink-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - fundilink-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fundilink-internal
+
+  fundilink-api:
+    build:
+      context: .
+      dockerfile: src/FundiLink.Api/Dockerfile
+    image: fundilink-api:latest
+    container_name: fundilink-api
+    restart: unless-stopped
+    depends_on:
+      fundilink-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: "Host=fundilink-db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      JwtSettings__SecretKey: ${JWT_SECRET}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      JwtSettings__ExpiryMinutes: ${JWT_EXPIRY_MINUTES:-60}
+      Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS}
+      DocumentStorage__RootPath: /app/uploads
+      DocumentStorage__MaxSizeBytes: ${DOCUMENT_MAX_SIZE_BYTES:-10485760}
+      RateLimiting__PermitLimit: ${RATE_LIMIT_PERMIT_LIMIT:-100}
+      RateLimiting__WindowSeconds: ${RATE_LIMIT_WINDOW_SECONDS:-60}
+    volumes:
+      - ${UPLOADS_PATH:-/opt/fundilink/uploads}:/app/uploads
+    ports:
+      - "127.0.0.1:5000:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fundilink-internal
+      - fundilink-public
+
+  fundilink-frontend:
+    build:
+      context: ./src/fundilink-web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    image: fundilink-frontend:latest
+    container_name: fundilink-frontend
+    restart: unless-stopped
+    depends_on:
+      - fundilink-api
+    ports:
+      - "127.0.0.1:5173:8080"
+    networks:
+      - fundilink-public
+
+networks:
+  fundilink-internal:
+    internal: true
+  fundilink-public:
+
+volumes:
+  fundilink-pgdata:

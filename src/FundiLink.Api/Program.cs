@@ -168,6 +168,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.MapHealthChecks("/health/db");
 
 // Apply pending EF Core migrations on startup. This is idempotent and never

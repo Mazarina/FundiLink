@@ -1,13 +1,12 @@
 # Production deployment for FundiLink by ZulTek.
 #
-# Expected to run from /opt/fundilink/app on the VPS, with an env file at
-# /opt/fundilink/env/.env (see .env.production.example for the required keys).
+# Run from /opt/fundilink/app on the VPS, with the env file at
+# /opt/fundilink/env/fundilink.env (see .env.production.example for required keys).
 #
 # Networking:
 #   - fundilink-db is NOT published to the host (internal network only).
-#   - fundilink-api and fundilink-frontend are published on local-only ports;
-#     a host Nginx + Certbot reverse-proxies HTTPS traffic to them
-#     (see DEPLOYMENT.md).
+#   - fundilink-api  -> 127.0.0.1:5100  (host-level Nginx proxies HTTPS)
+#   - fundilink-web  -> 127.0.0.1:3100  (host-level Nginx proxies HTTPS)
 
 services:
   fundilink-db:
@@ -51,9 +50,9 @@ services:
       RateLimiting__PermitLimit: ${RATE_LIMIT_PERMIT_LIMIT:-100}
       RateLimiting__WindowSeconds: ${RATE_LIMIT_WINDOW_SECONDS:-60}
     volumes:
-      - ${UPLOADS_PATH:-/opt/fundilink/uploads}:/app/uploads
+      - /opt/fundilink/storage/documents:/app/uploads
     ports:
-      - "127.0.0.1:5000:8080"
+      - "127.0.0.1:5100:8080"
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
       interval: 30s
@@ -63,19 +62,24 @@ services:
       - fundilink-internal
       - fundilink-public
 
-  fundilink-frontend:
+  fundilink-web:
     build:
       context: ./src/fundilink-web
       dockerfile: Dockerfile
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     image: fundilink-frontend:latest
-    container_name: fundilink-frontend
+    container_name: fundilink-web
     restart: unless-stopped
     depends_on:
       - fundilink-api
     ports:
-      - "127.0.0.1:5173:8080"
+      - "127.0.0.1:3100:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     networks:
       - fundilink-public
 

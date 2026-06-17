@@ -1,17 +1,16 @@
 using FundiLink.Application.Common;
 using FundiLink.Application.Common.Interfaces;
-using FundiLink.Domain.Entities;
 using MediatR;
 
-namespace FundiLink.Application.Features.Documents.Commands.UploadDocument;
+namespace FundiLink.Application.Features.Documents.Commands.ReplaceDocument;
 
-public class UploadDocumentHandler : IRequestHandler<UploadDocumentCommand, Guid>
+public class ReplaceDocumentHandler : IRequestHandler<ReplaceDocumentCommand>
 {
     private readonly ILearnerRepository _learnerRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly IDocumentStorageService _storageService;
 
-    public UploadDocumentHandler(
+    public ReplaceDocumentHandler(
         ILearnerRepository learnerRepository,
         IDocumentRepository documentRepository,
         IDocumentStorageService storageService)
@@ -21,29 +20,22 @@ public class UploadDocumentHandler : IRequestHandler<UploadDocumentCommand, Guid
         _storageService = storageService;
     }
 
-    public async Task<Guid> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
+    public async Task Handle(ReplaceDocumentCommand request, CancellationToken cancellationToken)
     {
         DocumentValidation.Validate(request.FileName, request.ContentType, request.SizeBytes);
+
+        var document = await _documentRepository.GetByIdAsync(request.DocumentId, cancellationToken)
+            ?? throw new KeyNotFoundException("Document not found.");
 
         var learner = await _learnerRepository.GetByUserIdAsync(request.UserId, cancellationToken)
             ?? throw new KeyNotFoundException("Learner profile not found.");
 
-        var documentId = Guid.NewGuid();
-        var storageKey = $"{learner.Id}/{documentId}";
+        if (document.LearnerId != learner.Id)
+            throw new UnauthorizedAccessException("You do not have permission to replace this document.");
 
-        await _storageService.StoreAsync(request.Content, request.ContentType, storageKey, cancellationToken);
+        await _storageService.StoreAsync(request.Content, request.ContentType, document.StorageKey, cancellationToken);
 
-        var document = Document.Create(
-            learner.Id,
-            request.DocumentType,
-            request.FileName,
-            request.ContentType,
-            request.SizeBytes,
-            storageKey);
-
-        await _documentRepository.AddAsync(document, cancellationToken);
+        document.ReplaceFile(request.FileName, request.ContentType, request.SizeBytes);
         await _documentRepository.SaveChangesAsync(cancellationToken);
-
-        return document.Id;
     }
 }

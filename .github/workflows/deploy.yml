@@ -1,0 +1,11 @@
+# This workflow is superseded by deploy-fundilink.yml.
+# It is kept here only as a historical reference and is disabled.
+# Do not enable this workflow — use deploy-fundilink.yml instead.
+name: Deploy to Production (legacy — disabled)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type LEGACY to confirm you want to run the legacy workflow"
+        required: true

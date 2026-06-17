@@ -1,0 +1,201 @@
+name: Deploy FundiLink to Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore and build backend
+        run: |
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+
+      - name: Test backend
+        run: dotnet test --no-build --configuration Release --verbosity normal
+        env:
+          ConnectionStrings__Default: "Host=localhost;Database=test;Username=test;Password=test"
+          JwtSettings__SecretKey: "ci-test-secret-key-minimum-32-chars-long"
+          JwtSettings__Issuer: "FundiLink"
+          JwtSettings__Audience: "FundiLink"
+          JwtSettings__ExpiryMinutes: "60"
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: src/fundilink-web/package-lock.json
+
+      - name: Install and build frontend
+        working-directory: src/fundilink-web
+        run: |
+          npm ci
+          npm run build
+        env:
+          VITE_API_BASE_URL: https://api.fundilink.zultek.co.za
+
+      - name: Test frontend
+        working-directory: src/fundilink-web
+        run: npm test
+
+  deploy:
+    name: Deploy to VPS
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.VPS_PORT || 22 }}" -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Create VPS directories
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "sudo mkdir -p /opt/fundilink/app \
+                           /opt/fundilink/env \
+                           /opt/fundilink/storage/documents \
+                           /opt/fundilink/backups && \
+             sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} /opt/fundilink && \
+             chmod 750 /opt/fundilink/env \
+                       /opt/fundilink/storage/documents \
+                       /opt/fundilink/backups"
+
+      - name: Sync application code to VPS
+        run: |
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '**/node_modules' \
+            --exclude '**/bin' \
+            --exclude '**/obj' \
+            --exclude '**/dist' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude 'storage' \
+            --exclude 'uploads' \
+            --exclude 'logs' \
+            -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.VPS_PORT || 22 }}" \
+            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/fundilink/app/"
+
+      - name: Write production environment file
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "cat > /opt/fundilink/env/fundilink.env" <<'ENVEOF'
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_ISSUER=FundiLink
+          JWT_AUDIENCE=FundiLink
+          JWT_EXPIRY_MINUTES=60
+          CORS_ALLOWED_ORIGINS=https://fundilink.zultek.co.za
+          FRONTEND_URL=https://fundilink.zultek.co.za
+          API_BASE_URL=https://api.fundilink.zultek.co.za
+          VITE_API_BASE_URL=https://api.fundilink.zultek.co.za
+          DOCUMENT_MAX_SIZE_BYTES=10485760
+          RATE_LIMIT_PERMIT_LIMIT=100
+          RATE_LIMIT_WINDOW_SECONDS=60
+          ASPNETCORE_ENVIRONMENT=Production
+          ENVEOF
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "chmod 600 /opt/fundilink/env/fundilink.env"
+
+      - name: Deploy Nginx config
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
+            set -e
+            sudo cp /opt/fundilink/app/nginx/fundilink.zultek.co.za.conf \
+                    /etc/nginx/sites-available/fundilink.zultek.co.za.conf
+            sudo ln -sf /etc/nginx/sites-available/fundilink.zultek.co.za.conf \
+                        /etc/nginx/sites-enabled/fundilink.zultek.co.za.conf
+            sudo nginx -t
+          "
+
+      - name: Build and start containers
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
+            set -e
+            cd /opt/fundilink/app
+            docker compose -f docker-compose.production.yml \
+              --env-file /opt/fundilink/env/fundilink.env \
+              --project-name fundilink \
+              up -d --build
+          "
+          # EF Core migrations run automatically on API startup (see Program.cs).
+
+      - name: Reload Nginx
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "sudo systemctl reload nginx"
+
+      - name: Wait for API health check
+        run: |
+          echo "Waiting for API to become healthy..."
+          for i in $(seq 1 15); do
+            if curl -sf https://api.fundilink.zultek.co.za/health > /dev/null; then
+              echo "API is healthy"
+              break
+            fi
+            echo "Attempt $i/15 — retrying in 10s..."
+            sleep 10
+          done
+          curl -sf https://api.fundilink.zultek.co.za/health || { echo "API health check failed"; exit 1; }
+
+      - name: Verify frontend
+        run: |
+          curl -sSf https://fundilink.zultek.co.za -o /dev/null \
+            || { echo "Frontend health check failed"; exit 1; }
+          echo "Frontend is up"
+
+      - name: Show container status
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
+            docker compose -f /opt/fundilink/app/docker-compose.production.yml \
+              --env-file /opt/fundilink/env/fundilink.env \
+              --project-name fundilink \
+              ps
+          "
+
+      - name: Install Certbot and issue TLS certificates (first deploy only)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.VPS_PORT || 22 }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
+            if ! command -v certbot &>/dev/null; then
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq certbot python3-certbot-nginx
+            fi
+            # Only run certbot if the certificate does not yet exist.
+            if [ ! -f /etc/letsencrypt/live/fundilink.zultek.co.za/fullchain.pem ]; then
+              sudo certbot --nginx --non-interactive --agree-tos \
+                -m ${{ secrets.CERTBOT_EMAIL || secrets.VPS_USER + '@fundilink.zultek.co.za' }} \
+                -d fundilink.zultek.co.za \
+                -d api.fundilink.zultek.co.za
+            else
+              echo 'TLS certificate already exists — skipping certbot run.'
+            fi
+            sudo systemctl reload nginx
+          "

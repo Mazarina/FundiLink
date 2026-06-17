@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { login } from '../features/auth/authApi'
 import { useAuth } from '../features/auth/AuthContext'
+import { AppFooter } from '../features/navigation/AppFooter'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -35,7 +36,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-brand-light flex items-center justify-center p-4">
+    <main className="min-h-screen bg-brand-light flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm p-8">
         <h1 className="text-2xl font-bold text-brand-primary mb-1">Log in</h1>
         <p className="text-gray-500 text-sm mb-6">FundiLink by ZulTek</p>
@@ -70,6 +71,7 @@ export default function LoginPage() {
           <Link to="/register" className="text-brand-primary font-medium hover:underline">Create a free profile</Link>
         </p>
       </div>
+      <AppFooter />
     </main>
   )
 }

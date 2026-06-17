@@ -35,6 +35,8 @@ import DataRightsPage from './pages/DataRightsPage'
 import AdminErasureQueuePage from './pages/AdminErasureQueuePage'
 import AdminReportingDashboardPage from './pages/AdminReportingDashboardPage'
 import AdminAuditActivityPage from './pages/AdminAuditActivityPage'
+import TermsOfServicePage from './pages/TermsOfServicePage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 
 const ADMIN_ROLES = ['Admin', 'SupportAgent', 'SuperAdmin']
 
@@ -44,6 +46,8 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><HomeDashboardPage /></ProtectedRoute>} />

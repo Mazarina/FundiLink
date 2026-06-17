@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { AppFooter } from '../features/navigation/AppFooter'
 
 function HomePage() {
   return (
@@ -26,6 +27,7 @@ function HomePage() {
           </Link>
         </div>
       </div>
+      <AppFooter />
     </main>
   )
 }

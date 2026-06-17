@@ -58,4 +58,20 @@ public class Document : BaseEntity
         VerifiedAt = null;
         MarkUpdated();
     }
+
+    /// <summary>
+    /// Replaces the file behind this document record (same storage key, new content).
+    /// Resets verification state so the replacement is re-checked by an admin.
+    /// </summary>
+    public void ReplaceFile(string fileName, string contentType, long sizeBytes)
+    {
+        FileName = fileName;
+        ContentType = contentType;
+        SizeBytes = sizeBytes;
+        Status = DocumentStatus.Pending;
+        RejectionReason = null;
+        VerifiedByUserId = null;
+        VerifiedAt = null;
+        MarkUpdated();
+    }
 }

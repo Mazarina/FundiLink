@@ -1,75 +1,225 @@
-name: Deploy to Production
+name: Deploy FundiLink
 
 on:
-  workflow_dispatch:
   push:
     branches: [main]
+  workflow_dispatch:
+
+env:
+  VPS_HOST: 169.239.183.133
+  VPS_USER: deploy
+  APP_PATH: /opt/fundilink/app
 
 jobs:
+  # ============================================================
+  # Job 1: Build & Test
+  # ============================================================
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---- Backend ----
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore backend
+        run: dotnet restore FundiLink.sln
+
+      - name: Build backend (Release)
+        run: dotnet build FundiLink.sln --configuration Release --no-restore
+
+      - name: Test backend
+        run: |
+          if dotnet sln FundiLink.sln list | grep -qi "Test\|Tests\|Spec"; then
+            dotnet test FundiLink.sln --configuration Release --no-build --verbosity normal
+          else
+            echo "No test projects found — skipping dotnet test."
+          fi
+
+      # ---- Frontend ----
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: src/fundilink-web/package-lock.json
+
+      - name: Install frontend deps
+        working-directory: src/fundilink-web
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: src/fundilink-web
+        run: |
+          if npm run --list 2>/dev/null | grep -q "^lint$"; then
+            npm run lint
+          else
+            echo "No lint script — skipping."
+          fi
+
+      - name: Test frontend
+        working-directory: src/fundilink-web
+        run: |
+          if npm run --list 2>/dev/null | grep -q "^test$"; then
+            npm test -- --run
+          else
+            echo "No test script — skipping."
+          fi
+
+      - name: Build frontend
+        working-directory: src/fundilink-web
+        env:
+          VITE_API_BASE_URL: https://api-fundilink.zultek.co.za
+        run: npm run build
+
+  # ============================================================
+  # Job 2: Deploy to VPS
+  # ============================================================
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    environment: production
+    needs: build-test
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Validate required secrets
+        run: |
+          MISSING=""
+          [[ -z "${{ secrets.KORA_VPS_SSH_PRIVATE_KEY }}" ]]    && MISSING="${MISSING} KORA_VPS_SSH_PRIVATE_KEY"
+          [[ -z "${{ secrets.FUNDILINK_POSTGRES_PASSWORD }}" ]]  && MISSING="${MISSING} FUNDILINK_POSTGRES_PASSWORD"
+          [[ -z "${{ secrets.FUNDILINK_JWT_SECRET }}" ]]         && MISSING="${MISSING} FUNDILINK_JWT_SECRET"
+          if [[ -n "${MISSING}" ]]; then
+            echo "ERROR: Missing required GitHub secrets:${MISSING}" >&2
+            echo "Add them at: Settings → Secrets and variables → Actions" >&2
+            exit 1
+          fi
+          echo "All required secrets present."
 
-      - name: Configure SSH
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---- SSH Setup ----
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          echo "${{ secrets.KORA_VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/fundilink_deploy
+          chmod 600 ~/.ssh/fundilink_deploy
+          ssh-keyscan -H ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Sync application code to VPS
+      # ---- Sync code to VPS ----
+      - name: Rsync repository to VPS
         run: |
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+            ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+            "mkdir -p ${{ env.APP_PATH }}"
           rsync -az --delete \
-            --exclude '.git' \
-            --exclude '**/node_modules' \
-            --exclude '**/bin' \
-            --exclude '**/obj' \
-            --exclude '**/dist' \
-            -e "ssh -i ~/.ssh/id_ed25519" \
-            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_APP_DIR }}/"
+            --exclude='.git/' \
+            --exclude='node_modules/' \
+            --exclude='src/fundilink-web/dist/' \
+            --exclude='.env*' \
+            --exclude='src/FundiLink.*/bin/' \
+            --exclude='src/FundiLink.*/obj/' \
+            -e "ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no" \
+            ./ \
+            ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.APP_PATH }}/
 
-      - name: Write production environment file
+      # ---- Write .env.production on VPS (printf avoids shell interpolation of secret values) ----
+      - name: Write .env.production on VPS
+        env:
+          FUNDILINK_POSTGRES_PASSWORD: ${{ secrets.FUNDILINK_POSTGRES_PASSWORD }}
+          FUNDILINK_JWT_SECRET:        ${{ secrets.FUNDILINK_JWT_SECRET }}
+          FUNDILINK_VITE_API_BASE_URL: ${{ secrets.FUNDILINK_VITE_API_BASE_URL || 'https://api-fundilink.zultek.co.za' }}
         run: |
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "mkdir -p /opt/fundilink/env && cat > /opt/fundilink/env/.env" <<EOF
-          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          JWT_ISSUER=${{ secrets.JWT_ISSUER }}
-          JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE }}
-          CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
-          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-          API_BASE_URL=${{ secrets.API_BASE_URL }}
-          VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
-          UPLOADS_PATH=${{ secrets.UPLOADS_PATH }}
-          ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}
-          EOF
+          printf '%s\n' \
+            "POSTGRES_DB=fundilink_prod" \
+            "POSTGRES_USER=fundilink_app" \
+            "POSTGRES_PASSWORD=${FUNDILINK_POSTGRES_PASSWORD}" \
+            "JWT_SECRET=${FUNDILINK_JWT_SECRET}" \
+            "JWT_ISSUER=FundiLink" \
+            "JWT_AUDIENCE=FundiLink" \
+            "JWT_EXPIRY_MINUTES=60" \
+            "CORS_ALLOWED_ORIGINS=https://fundilink.zultek.co.za" \
+            "FRONTEND_URL=https://fundilink.zultek.co.za" \
+            "API_BASE_URL=https://api-fundilink.zultek.co.za" \
+            "VITE_API_BASE_URL=${FUNDILINK_VITE_API_BASE_URL}" \
+            "UPLOADS_PATH=/opt/fundilink/uploads" \
+            "DOCUMENT_MAX_SIZE_BYTES=10485760" \
+            "RATE_LIMIT_PERMIT_LIMIT=100" \
+            "RATE_LIMIT_WINDOW_SECONDS=60" \
+            > /tmp/env.production
+          scp -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              /tmp/env.production \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.APP_PATH }}/.env.production
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+              'chmod 600 /opt/fundilink/app/.env.production'
+          rm -f /tmp/env.production
 
-      - name: Build and start containers
+      # ---- Prepare VPS directories ----
+      - name: Prepare VPS directories
         run: |
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
-            set -e
-            cd ${{ secrets.VPS_APP_DIR }}
-            docker compose -f docker-compose.production.yml --env-file /opt/fundilink/env/.env build
-            docker compose -f docker-compose.production.yml --env-file /opt/fundilink/env/.env up -d
-          "
-          # Note: EF Core migrations are applied automatically by the API on
-          # startup (see Program.cs) — no separate migration step is needed.
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+              'mkdir -p /opt/fundilink/uploads /opt/fundilink/backups && chmod 700 /opt/fundilink/uploads'
 
-      - name: Health check
+      # ---- Docker build + deploy ----
+      - name: Build Docker images
         run: |
-          for i in $(seq 1 10); do
-            if curl -sf "${{ secrets.API_BASE_URL }}/health" > /dev/null; then
-              echo "API healthy"
-              exit 0
-            fi
-            echo "Waiting for API to become healthy ($i/10)..."
-            sleep 5
-          done
-          echo "API health check failed"
-          exit 1
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+              'cd /opt/fundilink/app && \
+               docker compose -f docker-compose.production.yml --env-file .env.production build --pull'
+
+      - name: Start containers
+        run: |
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+              'cd /opt/fundilink/app && \
+               docker compose -f docker-compose.production.yml --env-file .env.production up -d || \
+               { echo "--- fundilink-api logs ---"; docker logs fundilink-api --tail 80 2>&1; exit 1; }'
+
+      # ---- Wait for API health ----
+      - name: Wait for API to become healthy
+        run: |
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+              'for i in $(seq 1 18); do
+                 STATUS=$(docker inspect --format="{{.State.Health.Status}}" fundilink-api 2>/dev/null || echo "missing")
+                 echo "  [${i}/18] fundilink-api health: ${STATUS}"
+                 if [[ "${STATUS}" == "healthy" ]]; then exit 0; fi
+                 sleep 10
+              done
+              echo "ERROR: fundilink-api did not become healthy in 180s" >&2
+              docker logs fundilink-api --tail 50 >&2
+              exit 1'
+
+      # ---- Verify web and API reachable on local ports ----
+      - name: Verify services reachable
+        run: |
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+              'curl -sf http://127.0.0.1:5000/health -o /dev/null -w "fundilink-api /health HTTP %{http_code}\n" && \
+               curl -sf http://127.0.0.1:5173/ -o /dev/null -w "fundilink-frontend HTTP %{http_code}\n"'
+
+      # ---- Prune unused images ----
+      - name: Prune unused Docker images
+        run: |
+          ssh -i ~/.ssh/fundilink_deploy -o StrictHostKeyChecking=no \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+              'docker image prune -f --filter "until=24h"'
+
+      - name: Deployment complete
+        run: |
+          echo ""
+          echo "============================================================"
+          echo "  FundiLink deployed successfully!"
+          echo "  URL: https://fundilink.zultek.co.za"
+          echo "  API: https://api-fundilink.zultek.co.za"
+          echo "  Commit: ${{ github.sha }}"
+          echo "============================================================"

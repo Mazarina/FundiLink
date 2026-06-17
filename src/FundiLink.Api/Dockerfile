@@ -16,7 +16,9 @@ RUN dotnet publish src/FundiLink.Api/FundiLink.Api.csproj -c Release -o /app/pub
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-RUN addgroup --system --gid 1001 fundilink \
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && addgroup --system --gid 1001 fundilink \
     && adduser --system --uid 1001 --gid 1001 fundilink \
     && mkdir -p /app/uploads \
     && chown -R fundilink:fundilink /app

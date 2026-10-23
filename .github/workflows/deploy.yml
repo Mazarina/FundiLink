@@ -43,14 +43,14 @@ jobs:
           fi
 
       # ---- Frontend ----
-      - name: Setup Node 20
+      - name: Setup Node.js 22.23.4
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '22.23.4'
 
       - name: Install frontend deps
         working-directory: src/fundilink-web
-        run: npm install
+        run: npm ci
 
       - name: Lint frontend
         working-directory: src/fundilink-web

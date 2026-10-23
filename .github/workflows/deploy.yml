@@ -55,7 +55,7 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
             set -e
             cd ${{ secrets.VPS_APP_DIR }}
-            docker compose -f docker-compose.production.yml --env-file /opt/fundilink/env/.env build
+            docker compose -f docker-compose.production.yml --env-file /opt/fundilink/env/.env build --pull
             docker compose -f docker-compose.production.yml --env-file /opt/fundilink/env/.env up -d
           "
           # Note: EF Core migrations are applied automatically by the API on

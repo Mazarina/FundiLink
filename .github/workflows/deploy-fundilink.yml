@@ -32,10 +32,10 @@ jobs:
           JwtSettings__Audience: "FundiLink"
           JwtSettings__ExpiryMinutes: "60"
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22.23.4
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.23.4'
           cache: 'npm'
           cache-dependency-path: src/fundilink-web/package-lock.json
 
@@ -141,7 +141,11 @@ jobs:
             docker compose -f docker-compose.production.yml \
               --env-file /opt/fundilink/env/fundilink.env \
               --project-name fundilink \
-              up -d --build
+              build --pull
+            docker compose -f docker-compose.production.yml \
+              --env-file /opt/fundilink/env/fundilink.env \
+              --project-name fundilink \
+              up -d
           "
           # EF Core migrations run automatically on API startup (see Program.cs).
 
